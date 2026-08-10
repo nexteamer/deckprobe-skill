@@ -4,3 +4,15 @@
 packages/deckprobe-js/node_modules/
 packages/deckprobe-js/dist/
 packages/deckprobe-js/wasm/
+qa/fixtures/public/*
+qa/fixtures/generated/*
+qa/fixtures/user/*
+!qa/fixtures/user/README.md
+qa/results/
+qa/runs/
+qa/*.local.csv
+/workflow-source/
+/workflow-candidate/
+/output/
+__pycache__/
+*.pyc

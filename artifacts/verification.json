@@ -1,0 +1,100 @@
+{
+  "project": "DeckProbe Skill",
+  "artifact_role": "Round 3 verification index",
+  "status": "in_progress",
+  "active_repository_authority": true,
+  "scope": "DeckProbe Skill v0.3.0 large-file, error-artifact, QA, release, installation, and fresh Codex E2E reliability work",
+  "authority": {
+    "execution_ledger": "ROUND3_EXECUTION.md",
+    "acceptance_contract": "ACCEPTANCE_CONTRACT.md",
+    "evaluation_oracle": "qa/QA.csv",
+    "historical_tracker": "agent-tasks.csv"
+  },
+  "explicit_exclusions": [
+    "Impact Reconnaissance Pilot",
+    "Superpower Brainstorming",
+    "Meta Regression and mandatory independent review",
+    "OCR, rendering, extraction, summarization, conversion, URL, batch, Windows, macOS, and guaranteed Word or Pages page counts"
+  ],
+  "current_gate": {
+    "id": "R3-GITHUB-RELEASE-CANDIDATE",
+    "status": "ready",
+    "required_next_event": "Commit and push the validated release/v0.3.0 candidate, then revalidate from a clean remote clone"
+  },
+  "implementation_evidence": {
+    "focused_wrapper_tests": {
+      "path": "qa/tests/test-probe-document.sh",
+      "result": "18 passed, 0 failed",
+      "observed_by": "main task"
+    },
+    "corpus_run": {
+      "path": "qa/runs/20260810T150410Z-273096/",
+      "wrapper_sha256": "47707e8b30a782913334fbf9863f932303d123cf3bcaf3824f07fd0e9d8407c5",
+      "deckprobe_version": "deckprobe 2.3.0",
+      "case_count": 46,
+      "private_count": 12,
+      "successful_reports": 41,
+      "expected_error_reports": 5,
+      "large_pdf_pages": 477,
+      "large_pdf_physical_bytes_read": 252009153,
+      "observed_by": "main task"
+    },
+    "docker_run": {
+      "path": "output/deckprobe/e2e/docker-20260810T150659Z-278418/",
+      "server_version": "29.1.3",
+      "image": "deckprobe-skill-e2e:2.3.0",
+      "container_user": "1000:1000",
+      "network": "none; lo only",
+      "root_filesystem": "read-only",
+      "matrix_cases": 9,
+      "large_pdf_pages": 477,
+      "missing_dependency_exit": 127,
+      "observed_by": "main task"
+    }
+  },
+  "governance_validation": {
+    "status": "passed",
+    "qa_rows": 47,
+    "qa_ids_unique": true,
+    "contract_qa_families_resolved": true,
+    "contract_ledger_ids_resolved": true,
+    "skill_structure_valid": true,
+    "wrapper_shell_syntax_valid": true,
+    "local_only_paths_ignored": true,
+    "publication_scan_clean": true,
+    "git_diff_check_clean": true
+  },
+  "planning_evidence": {
+    "real_private_cases_observed": 12,
+    "existing_public_and_generated_cases": 32,
+    "planned_security_fixtures": 2,
+    "large_pdf_observation": {
+      "input_bytes": 252009145,
+      "page_count": 477,
+      "physical_bytes_read": 252009153,
+      "elapsed_ms_approx": 4930,
+      "peak_rss_kib": 503516,
+      "disposition": "historical planning observation; superseded for local-runtime acceptance by implementation_evidence.corpus_run and docker_run"
+    },
+    "docker_access": "ordinary socket access denied; sudo -n docker info succeeded with server 29.1.3",
+    "installed_skill": "current source and installed SKILL.md hashes matched before Round 3 implementation"
+  },
+  "required_evidence_roots": [
+    "qa/runs/<run-id>/",
+    "output/deckprobe/e2e/",
+    "remote GitHub commit, tag, release, clean-clone, and installer evidence",
+    "installed Skill backup and pre/post hash evidence"
+  ],
+  "blocked_or_unverified": [
+    "GitHub v0.3.0 has not been published or clean-installed",
+    "The current installed Skill has not been replaced with v0.3.0",
+    "Fresh installed Codex Skill E2E has not been executed"
+  ],
+  "workflow_history": {
+    "id": "WF-PORT-001",
+    "status": "closed",
+    "result": "DeckProbe-specific root workflow approved and promoted on 2026-08-10",
+    "evidence": "agent-tasks.csv"
+  },
+  "completion_claim": "IMPLEMENTATION_AND_LOCAL_RUNTIME_VERIFIED_RELEASE_PENDING"
+}

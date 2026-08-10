@@ -13,6 +13,15 @@ format defaults and security signals (`@default,@security`) at metadata level.
 The user does not need to name a target, and this Skill must not ask the user
 to choose one or replace the wrapper with a direct CLI invocation.
 
+The v0.3.0 wrapper accepts a file only when its size is at most 1 GiB
+(1,073,741,824 bytes). It applies a physical-read budget of
+`max(16 MiB, input size + 1 MiB)`; when that budget is above 16 MiB it gives the
+DeckProbe process a 60-second timeout. A PDF larger than 128 MiB is checked
+against Linux `/proc/meminfo` before DeckProbe starts and is refused when
+`MemAvailable` is unavailable or below three times the input size. These guards
+do not raise DeckProbe's expanded-byte or archive-entry defaults. Do not retry
+with a larger limit, another parser, or a stale report.
+
 Return a business-first check card backed by the wrapper's unchanged schema-v2
 JSON artifact. The card explains whether the file is technically eligible for
 the next document tool and calls out evidence-backed attention signals. It is
@@ -84,8 +93,9 @@ and `deckprobe --version`. If either check fails, stop and point the user to
 do not use `sudo`, Docker, or a system-directory write.
 
 The wrapper is the only execution interface. It validates Linux, regular-file
-readability, dependency availability, and output. Use [the bundled wrapper](scripts/probe-document.sh)
-and invoke it exactly as:
+readability, dependency availability, the v0.3.0 size/resource policy, and
+output. Use [the bundled wrapper](scripts/probe-document.sh) and invoke it
+exactly as:
 
 ```text
 sh <this skill directory>/scripts/probe-document.sh INPUT [OUTPUT_DIR]
@@ -93,8 +103,15 @@ sh <this skill directory>/scripts/probe-document.sh INPUT [OUTPUT_DIR]
 
 The optional output directory is writable and explicit only when needed. The
 wrapper's default is `output/deckprobe` below the caller's current directory.
-Its stdout on a successful or partial probe is exactly one absolute path to a
-non-empty JSON artifact. Capture that path exactly; stdout is not the report.
+When DeckProbe emits non-empty output, stdout is exactly one absolute current-run
+artifact path: a `.json` path only when the output is valid JSON, or a
+`.diagnostic` path when the output is invalid. A diagnostic artifact preserves
+the exact current-run bytes but is failure evidence, never a raw JSON report.
+If DeckProbe returned a nonzero status, the wrapper returns that original status;
+invalid output after a zero CLI status returns wrapper failure. Capture the path
+exactly; stdout is not the report. An empty-output, size, memory, dependency, or
+version refusal can have no artifact and must retain its real stderr/exit
+evidence.
 
 ## Execute one standard check
 
@@ -102,20 +119,30 @@ non-empty JSON artifact. Capture that path exactly; stdout is not the report.
    its extension against the trigger list. Reject URLs, stdin, folders, globs,
    and multiple paths before invoking anything.
 2. Invoke only the bundled wrapper once through `sh`. Do not depend on the
-   downloaded file retaining an executable bit, and do not pass a hand-picked target list;
-   the wrapper's `@default,@security` selection is the standard check.
-3. Read the JSON artifact at the exact path printed by the wrapper. Preserve its
-   original bytes for the final artifact link. Do not reconstruct it from
-   selected fields or replace it with a direct CLI response.
+   downloaded file retaining an executable bit, and do not pass a hand-picked
+   target list; the wrapper's `@default,@security` selection is the standard
+   check. The wrapper performs the size, large-PDF memory, physical-budget, and
+   timeout checks before its one DeckProbe call.
+3. When the printed path ends in `.json`, read that valid JSON artifact and
+   preserve its original bytes for the final artifact link. When it ends in
+   `.diagnostic`, do not parse it as JSON: link it only as failed-run evidence.
+   Do not search the output directory for an older report, reconstruct JSON
+   from selected fields, or replace it with a direct CLI response. A nonzero
+   DeckProbe status remains a failed run even when its current JSON is retained.
 4. Branch only on the explicit top-level `status` (`ok`, `partial`, or
-   `error`). An absent, null, malformed, or unknown status, a missing/empty/
-   unreadable artifact, and invalid JSON are errors.
+   `error`) in a validated `.json` artifact. An absent, null, malformed, or
+   unknown status, a missing/empty/unreadable artifact, and a `.diagnostic`
+   artifact are errors. A pre-execution size, memory, dependency, or version
+   refusal is also an error with no fabricated report.
 
 For `ok`, report a completed check. For `partial`, report the completed work and
 the explicit gaps; never promote it to `ok` and never treat partial alone as a
 review trigger. For `error`, report the explicit `error.code`,
-`error.message`, and `error.exit_code` when present. If no artifact exists,
-report the wrapper's stderr and exit evidence and do not invent a report link.
+`error.message`, and `error.exit_code` when present. If a nonzero run retained a
+valid current JSON, link that exact artifact but still recommend **无法继续**. If
+it retained a `.diagnostic` artifact, link it only as invalid-output evidence and
+do not infer error fields. If no artifact exists, report the wrapper's stderr
+and exit evidence and do not invent a report link.
 
 The standard wrapper never runs in plan-only mode. If an abnormal report has an
 empty `execution.paths` array or every result has `status: "planned"`, classify
@@ -150,13 +177,17 @@ never a safety claim.
    matches.
 
 Apply the rules to evidence, not to guesses. A missing or unresolved secondary
-  metadata field (for example author, title, application, or application
-  version) can remain partial and still use **可继续处理**. A Pages metadata
-  page count is not a required primary count: write **本次未取得** (or the
-  English missing-value phrase) when it is unavailable, and do not trigger
-  review for that absence alone. `pages.cached_page_count` is cached package
-  metadata, not a current rendered page count. A digital signature is
-  informational only and does not by itself trigger **建议复核**.
+metadata field (for example author, title, application, or application
+version) can remain partial and still use **可继续处理**. A PDF page count is
+shown only when the current probe resolves `pdf.page_count`; never use a cached
+or inferred count. Word's `word.page_count` may be unavailable at metadata
+level even when the file is readable: write **本次未取得** (or the English
+missing-value phrase), and never call the document corrupted or infer a number.
+A Pages metadata page count is not a required primary count; write **本次未取得**
+when unavailable and do not trigger review for that absence alone.
+`pages.cached_page_count` is cached package metadata, not a current rendered page
+count. A digital signature is informational only and does not by itself trigger
+**建议复核**.
 
 **可继续处理** means technically eligible for the next document tool; it never
 means safe. Do not output or recommend unimplemented downstream capabilities,
@@ -219,20 +250,25 @@ the status in the card.
    state that no document bytes were interpreted. Use the localized
    missing-value phrase for every absent or unresolved field; do not infer zero,
    false, or an empty list.
-5. **Raw result / 原始结果** — provide a clickable Markdown link whose target
-   is exactly the absolute artifact path printed by the wrapper. Keep the JSON
-   unchanged and downloadable. If an error has no artifact, write exactly
+5. **Raw result / 原始结果** — for a `.json` path, provide a clickable Markdown
+   link whose target is exactly the absolute artifact path printed by the
+   wrapper and keep the JSON unchanged and downloadable, including a nonzero
+   run's retained valid JSON. For a `.diagnostic` path, label the link **当前
+   运行诊断输出（非 JSON）** (or `current-run diagnostic output (not JSON)`) and
+   do not present it as a raw report. If an error has no artifact, write exactly
    **未生成** (or `not generated` in English) and provide no link. This
    artifact-absence marker is not a missing report field; report values use the
-   localized missing-value phrase below. Otherwise, use the exact artifact path.
-   Never invent a placeholder, repository-relative substitute, false link, or
-   reconstructed compact report.
+   localized missing-value phrase below. Never search for a prior file, invent a
+   placeholder, use a repository-relative substitute, create a false link, or
+   reconstruct a compact report.
 
-For an execution/input/dependency error, use the **无法继续** state and the
-explicit stderr/exit or report error fields while making clear that the
+For an execution/input/dependency/resource error, use the **无法继续** state
+and the explicit stderr/exit or report error fields while making clear that the
 five-section error card is not a successful check. Its overview and Attention
 must use the missing-value phrase where evidence was not obtained; never
-fabricate format, security, or a raw-report link.
+fabricate format, security, or a raw-report link. A retained nonzero JSON or
+invalid-output diagnostic is evidence of the failed current run, not a
+successful check.
 
 ## Missing values and evidence language
 
@@ -253,8 +289,9 @@ in Developer Insights even when the business sections stay concise.
 ## Stop conditions
 
 Stop after returning the five-section card for `ok`, `partial`, or `error`.
-Include the exact raw JSON link when an artifact exists; for an error without
-one, write **未生成** (or `not generated`) instead. For a dependency, platform,
-input, wrapper, parse, or execution error, return the exact blocker and the next
-user-authorized action needed. Do not retry with another parser, install or fetch
-a binary, upload the file, or perform a non-trigger operation.
+Include the exact raw JSON link only for a valid `.json` artifact; label a
+`.diagnostic` link as non-JSON failure evidence; for an error without an
+artifact, write **未生成** (or `not generated`) instead. For a dependency,
+platform, input, wrapper, parse, or execution error, return the exact blocker
+and the next user-authorized action needed. Do not retry with another parser,
+install or fetch a binary, upload the file, or perform a non-trigger operation.

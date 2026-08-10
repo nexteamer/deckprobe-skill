@@ -1,0 +1,48 @@
+id,layer,scenario,fixture,expected,forbidden,status,evidence
+STATIC-001,static,Skill package structure,source-skill,powerful-skill-creator validator passes,warning or error ignored,pass,powerful-skill-creator validate_skill.py PASS on final integrated source
+STATIC-002,static,Shell syntax,source-wrapper,sh -n passes,syntax-only treated as runtime proof,pass,sh -n wrapper and focused test PASS; runtime proven separately
+WRAP-SIZE-001,wrapper,Input below 1 GiB,fake-supported-file,DeckProbe invoked once,input rejected by rounding error,pass,qa/tests/test-probe-document.sh main run 18/18
+WRAP-SIZE-002,wrapper,Input exactly 1 GiB,sparse-file-with-fake-cli,DeckProbe invoked once,cap treated as exclusive,pass,qa/tests/test-probe-document.sh main run 18/18
+WRAP-SIZE-003,wrapper,Input above 1 GiB,sparse-file,pre-execution refusal and no DeckProbe call,attempting to read the file,pass,qa/tests/test-probe-document.sh main run 18/18
+WRAP-BUDGET-001,wrapper,Small-file budget,fake-cli-capture,upstream default budget path retained,unnecessary large override,pass,qa/tests/test-probe-document.sh main run 18/18
+WRAP-BUDGET-002,wrapper,Large-file budget,fake-cli-capture,"probe size equals input plus 1 MiB and timeout is 60000",expanded or archive defaults raised,pass,qa/tests/test-probe-document.sh main run 18/18
+WRAP-MEM-001,wrapper,Large PDF with enough memory,fake-meminfo-and-cli,DeckProbe invoked once,memory guard skipped,pass,qa/tests/test-probe-document.sh main run 18/18
+WRAP-MEM-002,wrapper,Large PDF with insufficient memory,fake-meminfo,actionable refusal before DeckProbe,OOM-prone execution,pass,qa/tests/test-probe-document.sh main run 18/18
+WRAP-MEM-003,wrapper,Large PDF memory unavailable,fake-meminfo,actionable refusal before DeckProbe,guessing available memory,pass,qa/tests/test-probe-document.sh covers missing unreadable and malformed meminfo
+WRAP-ERROR-001,wrapper,Nonzero CLI with valid JSON,fake-cli,artifact path printed and original exit preserved,JSON deleted or exit changed,pass,qa/tests/test-probe-document.sh preserves exit 7 and unique JSON
+WRAP-ERROR-002,wrapper,Zero CLI with empty output,fake-cli,failed run and no success artifact,empty success report,pass,qa/tests/test-probe-document.sh main run 18/18
+WRAP-ERROR-003,wrapper,CLI output is invalid JSON,fake-cli,Skill rejects it as unusable,successful card or reconstructed JSON,pass,qa/tests/test-probe-document.sh preserves unique diagnostic and fails
+WRAP-ERROR-004,wrapper,Version check failure,fake-cli,real version exit retained and no report,probe attempted,pass,qa/tests/test-probe-document.sh preserves exit 13
+WRAP-ERROR-005,wrapper,DeckProbe missing,controlled-PATH,exit 127 and no fabricated result,fallback parser or install,pass,focused test plus Docker missing-dependency case
+WRAP-STALE-001,wrapper,Old JSON pre-seeded before failure,fake-cli-and-stale-output,current failure remains failure,old JSON selected,pass,qa/tests/test-probe-document.sh stale pressure case
+CORPUS-001,corpus,All public generated and private fixtures,46-case-local-corpus,every case has isolated terminal current-run evidence,aggregate hides a missing case,pass,qa/runs/20260810T150410Z-273096 run.json and 46 case manifests
+DOC-PAGE-001,corpus,Large real PDF page count,private-pdf-alias,partial report with 477 pages and bounded cost,default-budget failure or stale page count,pass,private-007 current JSON 477 pages and 252009153 physical bytes
+DOC-PAGE-002,corpus,Word page count present,private-docx-alias,reported count matches current JSON,count inferred from content,pass,current private DOCX aliases with resolved current JSON page count
+DOC-PAGE-003,corpus,Word page count absent,private-docx-alias,partial and page count not obtained,file called corrupted or page count guessed,pass,private-006 current JSON partial with word.page_count unknown and no value
+DOC-OFFICE-001,corpus,Large spreadsheet,private-xlsx-alias,current sheet count and isolated artifact,file size assumed to imply failure,pass,46-case run isolated private spreadsheet result
+DOC-OFFICE-002,corpus,CJK and space presentation path,private-pptx-alias,current slide count and isolated artifact,word-splitting or path breakage,pass,46-case run plus Docker CJK and space path
+DOC-IWORK-001,corpus,Modern Keynote,public-keynote-v6,current slide count and isolated artifact,legacy Keynote result substituted,pass,public-021 current JSON and Docker Keynote
+DOC-IWORK-002,corpus,Modern Numbers and Pages,public-modern-iwork,document-kind evidence and correct count boundary,cached Pages count called rendered pages,pass,46-case current JSON for modern iWork fixtures
+SECURITY-001,corpus,Password-protected PDF,public-password-pdf,recommendation requires password and JSON is linked,safe or generic failure wording,planned,
+SECURITY-002,corpus,Macro-bearing supported PPT,public-with-macros-ppt,recommendation requests review without malware verdict,macro executed or file called malicious,planned,
+SECURITY-003,corpus,Embedded file signal,public-embedded-pdf,review signal matches JSON,missing signal guessed false,planned,
+ERROR-001,corpus,Malformed document,public-malformed-fixture,real error code and current error artifact when produced,successful check card,pass,public-025 and public-027 isolated current error JSON
+ERROR-002,corpus,Unsupported legacy iWork,public-legacy-iwork,unsupported result remains unable to continue,modern-format result substituted,pass,public-020 public-022 and public-024 current unsupported JSON
+DOCKER-001,docker,Real wrapper runtime representative matrix,mounted-corpus,"non-root network-disabled controlled-PATH run passes required cases",host-only or direct-CLI evidence,pass,output/deckprobe/e2e/docker-20260810T150659Z-278418
+DOCKER-002,docker,Missing DeckProbe in container,controlled-container,fast exit 127 and no success artifact,host DeckProbe leakage,pass,Docker missing-dependency exit 127 no output
+DOCKER-003,docker,Large PDF in container,private-pdf-alias,477 pages and persistent host artifact,small PDF substituted,pass,Docker pdf-large current JSON persisted with 477 pages
+RELEASE-001,release,Clean GitHub clone,remote-v0.3.0,tracked tree and reconstructed public fixtures validate,local worktree used as substitute,planned,
+RELEASE-002,release,Remote Skill installation,empty-codex-home,installed hashes equal immutable tag source,copy-paste or mutable main,planned,
+INSTALL-001,install,Replace current installed Skill,host-codex-home,recoverable backup plus validated v0.3.0 install,destructive overwrite without rollback,planned,
+SKILL-001,codex,Explicit invocation,small-real-pdf,five-section card and exact current JSON link,direct CLI narrative only,planned,
+SKILL-002,codex,Natural-language invocation,real-pptx,Skill triggers and returns current slide evidence,Skill not loaded or wrong tool,planned,
+SKILL-003,codex,Large PDF user journey,private-pdf-alias,477-page card and actual I/O evidence,default-budget failure or stale report,planned,
+SKILL-004,codex,Missing Word page count,private-docx-alias,not obtained plus cautious review wording,guess or corruption claim,planned,
+SKILL-005,codex,Large spreadsheet,private-xlsx-alias,current sheet-count card,file-size-only conclusion,planned,
+SKILL-006,codex,Modern Keynote,public-keynote-v6,current slide-count card,unsupported legacy sample substituted,planned,
+SKILL-007,codex,Password signal,public-password-pdf,password recommendation and structural-signal boundary,safety claim,planned,
+SKILL-008,codex,Macro signal,public-with-macros-ppt,review recommendation without malware verdict,malicious-file verdict,planned,
+SKILL-009,codex,Nonzero error JSON,malformed-or-budget-case,unable-to-continue card with current raw link,old report or fabricated fields,planned,
+SKILL-010,codex,Summary request non-trigger,one-pdf,DeckProbe is not invoked and no probe JSON is created,probing merely because a PDF exists,planned,
+SKILL-011,codex,URL folder and multi-file refusal,invalid-request-set,no automatic selection or batch,one input silently selected,planned,
+PRIVACY-001,release,Public tracked-tree privacy,clean-clone,no private identity path hash content credential or workflow snapshot,.gitignore treated as sufficient proof,planned,

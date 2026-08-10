@@ -1,0 +1,16 @@
+flowchart TD
+  A[Reported need or failure] --> B[Current-state reproduction]
+  B --> C[Plan-mode business alignment]
+  C --> D[Task calibration]
+  D --> E[Acceptance contract and tracker]
+  E --> F[Bounded execution-readiness check]
+  F -->|blocked| C
+  F -->|approved| G[Smallest implementation]
+  G --> H[Isolated real-file and boundary QA]
+  H --> I[Docker runtime E2E]
+  I --> J[Publish immutable GitHub ref]
+  J --> K[Clean remote installation]
+  K --> L[Fresh Codex Skill user E2E]
+  L --> M[Completion audit]
+  M -->|gaps| G
+  M -->|all obligations terminal| N[Truthful delivery]

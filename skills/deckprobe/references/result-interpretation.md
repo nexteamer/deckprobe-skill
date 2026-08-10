@@ -14,6 +14,7 @@ execution, link fetching, decryption, editing, conversion, or model inference.
   - [Attention](#attention)
   - [Developer Insights](#developer-insights)
   - [Raw result](#raw-result)
+- [Runtime guard and current-run artifacts](#runtime-guard-and-current-run-artifacts)
 - [Language-localized missing values](#language-localized-missing-values)
 - [Format structure field map](#format-structure-field-map)
 - [Recommendation precedence](#recommendation-precedence)
@@ -27,9 +28,34 @@ execution, link fetching, decryption, editing, conversion, or model inference.
   - [Example: error](#example-error)
 - [Self-check before handoff](#self-check-before-handoff)
 
+## Runtime guard and current-run artifacts
+
+The v0.3.0 wrapper, not the language model, owns the preflight limits:
+
+- The accepted input is one readable local regular file no larger than
+  1,073,741,824 bytes (1 GiB, inclusive).
+- The physical-read budget is `max(16 MiB, input size + 1 MiB)`. When the
+  computed budget is above 16 MiB, DeckProbe runs under a 60-second timeout.
+- A PDF above 128 MiB runs only when Linux `/proc/meminfo` reports
+  `MemAvailable >= 3 × input size`. Missing or insufficient memory refuses the
+  run before DeckProbe and must be shown as **无法继续** with the real reason.
+- Expanded-byte and archive-entry defaults are not raised. There is no adaptive
+  retry, alternate parser, automatic installation, or stale-report fallback.
+
+Each invocation reserves unique `.json` and `.diagnostic` paths. Valid non-empty
+output retains the `.json` artifact. Non-empty invalid output retains the exact
+bytes at the `.diagnostic` path, prints that path, and is always failure
+evidence—not a raw JSON report. A nonzero CLI status is returned unchanged; an
+invalid output after a zero CLI status becomes wrapper failure. The card may
+link valid retained JSON or label a retained diagnostic as non-JSON failure
+evidence, and still recommends **无法继续**. If the wrapper or a preflight guard
+produces no artifact, use **未生成** (or **not generated**) and preserve the real
+stderr/exit evidence; never search the output directory for a report from an
+earlier run or another input.
+
 ## Five-section card
 
-Every successful or partial user response is exactly these five ordered sections:
+Every successful, partial, or error user response is exactly these five ordered sections:
 
 1. **Conclusion**
 2. **Document overview**
@@ -42,7 +68,10 @@ For a Chinese card, the exact headings are **结论**, **文档概览**, **需�
 headings but is explicitly not a successful document card: its overview and
 attention contain no fabricated document values, its Insights retain only the
 error evidence, and Raw result reports a missing artifact when none was
-generated.  Keep the first three sections business-readable and compact: do not
+generated. A nonzero run with retained current JSON still has an error card and
+links that exact current artifact; an invalid-output diagnostic is explicitly
+labeled non-JSON evidence. Keep the first three sections business-readable and
+compact: do not
 put target IDs, parser paths, source fields, confidence values, or I/O counters
 there.  Put those technical details in the compact **Developer Insights**
 bullets and keep the original JSON in **Raw result**.  Never invent a value that
@@ -85,7 +114,7 @@ Use these status meanings:
 | --- | --- |
 | `ok` | **Probe completed for the requested checks.** Required targets were obtained at or above their requested confidence. This does not mean every possible target was requested or that the document is safe. |
 | `partial` | **Probe completed with gaps.** At least one requested target is unresolved or below the requested confidence. Name the business-relevant gap in this section only; put its target ID and status in Developer Insights. A secondary metadata gap can still recommend **可继续处理**. |
-| `error` | **Probe failed before a usable document check.** Use the explicit error details and recommend **无法继续**; do not present identification, structure, or security conclusions as checked. |
+| `error` | **Probe failed before a usable document check.** Use the explicit error details and recommend **无法继续**; do not present identification, structure, or security conclusions as checked. If current-run JSON was retained, link it as failure evidence, not as a successful result. |
 
 The standard wrapper does not produce plan-only reports.  If an abnormal report
 nevertheless has empty `execution.paths` or every result is `planned`, classify
@@ -233,7 +262,9 @@ when combining it without losing required evidence:
 4. **Measured I/O:** `execution.paths` in reported order,
    `execution.estimated_cost` as path-cost units, and explicit
    `execution.actual_cost.physical_bytes_read`, `expanded_bytes`,
-   `random_reads`, and optional `elapsed_ms`. Never estimate a missing counter.
+   `random_reads`, and optional `elapsed_ms`. Include the wrapper's explicit
+   size/budget/timeout or memory-guard outcome when it is reported. Never
+   estimate a missing counter.
 5. **Recommendation reason:** name exactly which precedence rule won and classify
    missing fields as primary or secondary. State that a `partial` caused only by
    missing author, title, application, or application version can continue; a
@@ -263,15 +294,19 @@ instead of `0 ms`.
 
 ### Raw result
 
-Place the original schema-v2 JSON last.  For every usable wrapper `ok` or
-`partial` report, provide a clickable Markdown link whose target is exactly the
-absolute artifact path printed by the wrapper.  Preserve every top-level field,
-target-level `status`, `confidence`, `confidence_score`, `path`, `source`,
-execution counter, and diagnostic byte-for-byte in that downloadable artifact.
+Place the original schema-v2 JSON last. For every usable wrapper `ok` or
+`partial` report, and for an `error` that retained valid current-run JSON,
+provide a clickable Markdown link whose target is exactly the absolute artifact
+path printed by the wrapper. Preserve every top-level field, target-level
+`status`, `confidence`, `confidence_score`, `path`, `source`, execution counter,
+and diagnostic byte-for-byte in that downloadable artifact. If the printed path
+ends in `.diagnostic`, label it `current-run diagnostic output (not JSON)` (or
+**当前运行诊断输出（非 JSON）**) and do not parse or describe it as schema-v2.
 Do not use a fenced-JSON fallback, reconstruct Raw result from a compact
-`values` view, manufacture a link, or change `null` into a prose value.  When a
-wrapper/CLI error produced no artifact, say so and include its stderr and exit
-evidence in this section instead of inventing JSON or a link.
+`values` view, manufacture a link, or change `null` into a prose value. When a
+wrapper/CLI or preflight guard error produced no artifact, say so and include
+its stderr and exit evidence in this section instead of inventing JSON or a
+link.
 
 ## Format structure field map
 
@@ -284,7 +319,9 @@ except that Pages has no required current page-count target at metadata level.
 
 ### PDF
 
-Primary: `pdf.page_count`.
+Primary: `pdf.page_count`. Show a page count only when this current probe
+resolves that field; never infer it from file size or use a cached/rendered
+substitute.
 
 Available structural keys:
 `pdf.version`, `pdf.linearized`, `pdf.page_count`, `pdf.object_count`,
@@ -296,7 +333,10 @@ proof that every damaged feature was recovered.
 
 ### Word (OOXML and supported legacy Word statistics)
 
-Primary: `word.page_count`.
+Primary when available: `word.page_count`. Metadata probing may leave this
+field unresolved even for a readable Word file. Report **not obtained in this
+probe** (or **本次未取得**) and never label the file corrupted or guess a page
+count from other fields.
 
 Available structural keys:
 `word.page_count`, `word.word_count`, `word.character_count`,
@@ -393,10 +433,11 @@ Common identity/office keys may also be present:
 
 Apply the first matching state, exactly in this order:
 
-1. **无法继续 (cannot continue):** wrapper or CLI failure, unsupported or
-   unreadable input, an absent/null/malformed/unknown top-level status, a
-   report-level error, or an abnormal plan-only report (empty paths or all
-   results `planned`).
+1. **无法继续 (cannot continue):** wrapper or CLI failure, a size or large-PDF
+   memory preflight refusal, unsupported or unreadable input, an
+   absent/null/malformed/unknown top-level status, a report-level error, or an
+   abnormal plan-only report (empty paths or all results `planned`). A retained
+   nonzero JSON remains failure evidence and does not lower this state.
 2. **需要密码 (password required):** resolved
    `security.password_protected=true`.
 3. **建议复核 (review recommended):** any of the following: identity or
@@ -431,7 +472,7 @@ sentence.  Do not relabel `MALFORMED_INPUT`, `BUDGET_EXCEEDED`, or
 
 English templates:
 
-- `status: "error"`: `Probe failed: {error.code} — {error.message} (exit {error.exit_code}). No document-check card conclusions are available.` Recommend **无法继续** in the Conclusion section.
+- `status: "error"`: `Probe failed: {error.code} — {error.message} (exit {error.exit_code}). No document-check card conclusions are available.` Recommend **无法继续** in the Conclusion section. If a valid current-run JSON artifact was retained, link it as failure evidence and keep the original exit code. If the wrapper printed `.diagnostic`, link it only as non-JSON failure evidence.
 - `status: "partial"`: `Probe completed with gaps: {business gap} is not obtained in this probe.`
 - Target `budget_exceeded`: `The probe stopped at its configured budget; {target} is not obtained in this probe.`
 - Target `unsupported`: `This target is not supported at the requested format/level; {target} is not obtained in this probe.`
@@ -450,7 +491,9 @@ Chinese templates keep the same status, code, and target IDs while using
 
 Even failure, risk, password, and partial examples below retain exactly the
 five card sections; a missing artifact is described in Raw result rather than
-replaced with a fabricated link.
+replaced with a fabricated link. A retained valid nonzero JSON is linked as
+failure evidence; a `.diagnostic` artifact is labeled non-JSON evidence; either
+card remains **无法继续**.
 
 ## Examples
 
@@ -641,7 +684,7 @@ do not invent a report link.
 - [ ] Every card has 3–5 compact Developer Insights bullets covering
       completeness, primary evidence strength, noteworthy targets, actual I/O,
       and the recommendation reason.
-- [ ] `ok`, `partial`, abnormal plan-only, risk, password, and error handling
+- [ ] Size/memory preflight, `ok`, `partial`, abnormal plan-only, risk, password, and error handling
       follows the explicit top-level and per-target statuses; abnormal plan-only
       is **无法继续**, never `ok` or **可继续处理**.
 - [ ] Recommendation precedence is exact: 无法继续, 需要密码, 建议复核,
@@ -660,9 +703,10 @@ do not invent a report link.
 - [ ] Byte counters retain exact integers and binary humanization; missing
       `elapsed_ms` is never rendered as zero.
 - [ ] Attention uses only the concise structural-signal boundary; detailed
-      security limits remain available in Insights or Raw result.  A usable
-      wrapper report links the exact artifact path, no fenced-JSON fallback is
-      used, no link is invented, and no values view is expanded into missing
-      metadata.
+      security limits remain available in Insights or Raw result. A usable
+      wrapper report links the exact current-run `.json` path (including a
+      retained nonzero JSON); a `.diagnostic` is labeled non-JSON evidence; no
+      stale report is selected, no fenced-JSON fallback is used, no link is
+      invented, and no values view is expanded into missing metadata.
 - [ ] No OCR, Render, Parse, model inference, rendering, execution, decryption,
       external fetch, editing, conversion, or summarization was introduced.

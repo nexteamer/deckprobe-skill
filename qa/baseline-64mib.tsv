@@ -1,0 +1,33 @@
+index	path	bytes	rc	status	format	primary_count	error_code	physical_bytes_read
+1	qa/fixtures/generated/pdf-budget-near-limit-minus-4k.pdf	16773120	0	partial	pdf	1		16773128
+2	qa/fixtures/generated/pdf-budget-over-16mib.pdf	16777217	0	partial	pdf	1		16777225
+3	qa/fixtures/generated/pdf-budget-safe-16mib-minus-8.pdf	16777208	0	partial	pdf	1		16777216
+4	qa/fixtures/generated/pdf-budget-under-16mib.pdf	16777215	0	partial	pdf	1		16777223
+5	qa/fixtures/generated/pdf-large-32mib.pdf	33554432	0	partial	pdf	1		33554440
+6	qa/fixtures/public/apache-pdfbox/embedded-attachment.pdf	79414	0	partial	pdf	2		79422
+7	qa/fixtures/public/apache-pdfbox/encrypted-preexisting.pdf	41305	0	partial	pdf	1		41313
+8	qa/fixtures/public/apache-pdfbox/fill-form.pdf	7771	0	partial	pdf	1		7779
+9	qa/fixtures/public/apache-pdfbox/form-complex-1mb.pdf	1040970	0	partial	pdf	1		1040978
+10	qa/fixtures/public/apache-pdfbox/render-demo.pdf	34062	0	ok	pdf	1		34070
+11	qa/fixtures/public/apache-poi/complex-2.9mb.docx	2959626	0	partial	office-open-xml	3		6159
+12	qa/fixtures/public/apache-poi/complex-geometry.ppt	3333632	0	partial	office-legacy	48		3350024
+13	qa/fixtures/public/apache-poi/conditional-formatting.xls	1402368	0	partial	office-legacy	16		1347080
+14	qa/fixtures/public/apache-poi/embedded-ooxml.doc	319488	0	partial	office-legacy			155144
+15	qa/fixtures/public/apache-poi/keynote-export.pptx	2282394	0	ok	office-open-xml	1		14728
+16	qa/fixtures/public/apache-poi/libreoffice-complex.xlsx	1839194	0	partial	office-open-xml	2		8529
+17	qa/fixtures/public/apache-poi/pivot-table.xlsx	19460	0	partial	office-open-xml	3		8381
+18	qa/fixtures/public/apache-poi/sample-simple.doc	27136	0	partial	office-legacy	2		27144
+19	qa/fixtures/public/apache-poi/sample-simple.docx	11611	0	ok	office-open-xml	2		5078
+20	qa/fixtures/public/apache-poi/sample-simple.ppt	125440	0	partial	office-legacy	2		130056
+21	qa/fixtures/public/apache-poi/sample-simple.pptx	39083	0	ok	office-open-xml	2		12554
+22	qa/fixtures/public/apache-poi/sample-simple.xls	13824	0	partial	office-legacy	3		11272
+23	qa/fixtures/public/libetonyek/keynote-v5.key	139607	3	error			UNSUPPORTED_FORMAT	not-recorded
+24	qa/fixtures/public/libetonyek/keynote-v6.key	369034	0	ok	apple-iwork	1		10070
+25	qa/fixtures/public/libetonyek/numbers-v2.numbers	82572	3	error			UNSUPPORTED_FORMAT	not-recorded
+26	qa/fixtures/public/libetonyek/numbers-v3.numbers	70482	0	ok	apple-iwork	1		8106
+27	qa/fixtures/public/libetonyek/pages-v4.pages	32635	3	error			UNSUPPORTED_FORMAT	not-recorded
+28	qa/fixtures/public/libetonyek/pages-v5-extra-dir.pages	148376	4	error			MALFORMED_INPUT	not-recorded
+29	qa/fixtures/public/libetonyek/pages-v5.pages	65728	0	ok	apple-iwork			7764
+30	qa/fixtures/public/numbers-parser/corrupted.numbers	46778	4	error			MALFORMED_INPUT	not-recorded
+31	qa/fixtures/public/numbers-parser/custom-format-stress.numbers	622413	0	ok	apple-iwork	2		27287
+32	qa/fixtures/public/numbers-parser/test-basic.numbers	173690	0	ok	apple-iwork	2		22465
