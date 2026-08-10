@@ -6,7 +6,7 @@ document, preserves the schema-v2 JSON artifact, and turns the result into a
 business-first check card before a downstream document tool is selected.
 
 The public project is `nexteamer/deckprobe-skill`. Installation examples pin
-the immutable `v0.2.0` release tag so a recipient does not depend on mutable
+the immutable `v0.2.1` release tag so a recipient does not depend on mutable
 `main` state.
 
 ## Audience
@@ -69,7 +69,7 @@ The command below is the official Codex `skill-installer` remote flow. Run it
 only in an empty destination.
 
 ```sh
-python3 "${CODEX_HOME:-$HOME/.codex}/skills/.system/skill-installer/scripts/install-skill-from-github.py" --repo nexteamer/deckprobe-skill --path skills/deckprobe --ref v0.2.0
+python3 "${CODEX_HOME:-$HOME/.codex}/skills/.system/skill-installer/scripts/install-skill-from-github.py" --repo nexteamer/deckprobe-skill --path skills/deckprobe --ref v0.2.1
 ```
 
 The installer retrieves `skills/deckprobe` from the remote repository and
@@ -84,7 +84,7 @@ installer output, and installed hashes for release evidence.
 2. Ask Codex to use the Skill on one local file, for example:
    `Use $deckprobe on /path/to/document.pdf.`
 3. Let the Skill validate the path and call its bundled
-   `skills/deckprobe/scripts/probe-document.sh` wrapper once. Do not pass a
+   `skills/deckprobe/scripts/probe-document.sh` wrapper once through `sh`. Do not pass a
    hand-picked target list or bypass the wrapper.
 4. Keep the exact raw JSON artifact link returned with the check card. If the
    wrapper fails or produces no artifact, use the real stderr/exit evidence and

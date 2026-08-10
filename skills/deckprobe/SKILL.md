@@ -76,8 +76,8 @@ working directory:
 <this skill directory>/scripts/probe-document.sh
 ```
 
-Before invoking it, verify that the wrapper is executable and that the existing
-`PATH` contains a usable DeckProbe executable by running `command -v deckprobe`
+Before invoking it, verify that the wrapper is a readable regular file and that
+the existing `PATH` contains a usable DeckProbe executable by running `command -v deckprobe`
 and `deckprobe --version`. If either check fails, stop and point the user to
 `docs/INSTALLATION.md`; ask them to retry with DeckProbe already installed on
 `PATH`. Do not install, search for, prepend, or download another executable;
@@ -88,7 +88,7 @@ readability, dependency availability, and output. Use [the bundled wrapper](scri
 and invoke it exactly as:
 
 ```text
-<this skill directory>/scripts/probe-document.sh INPUT [OUTPUT_DIR]
+sh <this skill directory>/scripts/probe-document.sh INPUT [OUTPUT_DIR]
 ```
 
 The optional output directory is writable and explicit only when needed. The
@@ -101,7 +101,8 @@ non-empty JSON artifact. Capture that path exactly; stdout is not the report.
 1. Confirm that the supplied input is one readable regular file and normalize
    its extension against the trigger list. Reject URLs, stdin, folders, globs,
    and multiple paths before invoking anything.
-2. Invoke only the bundled wrapper once. Do not pass a hand-picked target list;
+2. Invoke only the bundled wrapper once through `sh`. Do not depend on the
+   downloaded file retaining an executable bit, and do not pass a hand-picked target list;
    the wrapper's `@default,@security` selection is the standard check.
 3. Read the JSON artifact at the exact path printed by the wrapper. Preserve its
    original bytes for the final artifact link. Do not reconstruct it from

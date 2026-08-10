@@ -38,12 +38,12 @@ or call another parser.
 
 ## Install the Skill from public GitHub
 
-The public package is `nexteamer/deckprobe-skill` at the immutable `v0.2.0`
+The public package is `nexteamer/deckprobe-skill` at the immutable `v0.2.1`
 release tag. Run this official Codex `skill-installer` command in an empty
 destination:
 
 ```sh
-python3 "${CODEX_HOME:-$HOME/.codex}/skills/.system/skill-installer/scripts/install-skill-from-github.py" --repo nexteamer/deckprobe-skill --path skills/deckprobe --ref v0.2.0
+python3 "${CODEX_HOME:-$HOME/.codex}/skills/.system/skill-installer/scripts/install-skill-from-github.py" --repo nexteamer/deckprobe-skill --path skills/deckprobe --ref v0.2.1
 ```
 
 Run it only when the destination Skill directory is empty. The installer must
@@ -54,8 +54,9 @@ public GitHub is unavailable.
 ## Verify and use
 
 The installed package must contain `SKILL.md`, `agents/openai.yaml`, the
-result-interpretation reference, and the executable
-`scripts/probe-document.sh`. Ask Codex to use `$deckprobe` on exactly one local
+result-interpretation reference, and the readable
+`scripts/probe-document.sh`. The Skill invokes that script through `sh`, so a
+GitHub download does not need to preserve its executable bit. Ask Codex to use `$deckprobe` on exactly one local
 supported document. The Skill calls the wrapper once and returns the fixed
 five-section card plus the unchanged JSON artifact.
 
