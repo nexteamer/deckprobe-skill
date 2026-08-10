@@ -13,7 +13,7 @@ format defaults and security signals (`@default,@security`) at metadata level.
 The user does not need to name a target, and this Skill must not ask the user
 to choose one or replace the wrapper with a direct CLI invocation.
 
-The v0.3.0 wrapper accepts a file only when its size is at most 1 GiB
+The v0.3.1 wrapper accepts a file only when its size is at most 1 GiB
 (1,073,741,824 bytes). It applies a physical-read budget of
 `max(16 MiB, input size + 1 MiB)`; when that budget is above 16 MiB it gives the
 DeckProbe process a 60-second timeout. A PDF larger than 128 MiB is checked
@@ -21,6 +21,9 @@ against Linux `/proc/meminfo` before DeckProbe starts and is refused when
 `MemAvailable` is unavailable or below three times the input size. These guards
 do not raise DeckProbe's expanded-byte or archive-entry defaults. Do not retry
 with a larger limit, another parser, or a stale report.
+
+For a local attachment path exposed as a symlink, v0.3.1 measures the target
+file before applying the size, memory, and physical-budget policy.
 
 Return a business-first check card backed by the wrapper's unchanged schema-v2
 JSON artifact. The card explains whether the file is technically eligible for
@@ -93,7 +96,7 @@ and `deckprobe --version`. If either check fails, stop and point the user to
 do not use `sudo`, Docker, or a system-directory write.
 
 The wrapper is the only execution interface. It validates Linux, regular-file
-readability, dependency availability, the v0.3.0 size/resource policy, and
+readability, dependency availability, the v0.3.1 size/resource policy, and
 output. Use [the bundled wrapper](scripts/probe-document.sh) and invoke it
 exactly as:
 
@@ -176,9 +179,9 @@ never a safety claim.
    primary count is obtained when that format has one, and no earlier rule
    matches.
 
-Apply the rules to evidence, not to guesses. A missing or unresolved secondary
-metadata field (for example author, title, application, or application
-version) can remain partial and still use **可继续处理**. A PDF page count is
+Apply the rules to evidence, not to guesses. Missing optional metadata (for
+example author, title, or application version) can leave a report partial while
+still using **可继续处理**. A PDF page count is
 shown only when the current probe resolves `pdf.page_count`; never use a cached
 or inferred count. Word's `word.page_count` may be unavailable at metadata
 level even when the file is readable: write **本次未取得** (or the English

@@ -30,7 +30,7 @@ execution, link fetching, decryption, editing, conversion, or model inference.
 
 ## Runtime guard and current-run artifacts
 
-The v0.3.0 wrapper, not the language model, owns the preflight limits:
+The v0.3.1 wrapper, not the language model, owns the preflight limits:
 
 - The accepted input is one readable local regular file no larger than
   1,073,741,824 bytes (1 GiB, inclusive).
@@ -41,6 +41,9 @@ The v0.3.0 wrapper, not the language model, owns the preflight limits:
   run before DeckProbe and must be shown as **无法继续** with the real reason.
 - Expanded-byte and archive-entry defaults are not raised. There is no adaptive
   retry, alternate parser, automatic installation, or stale-report fallback.
+
+For a local attachment path exposed as a symlink, v0.3.1 measures the target
+file before applying the size, memory, and physical-budget policy.
 
 Each invocation reserves unique `.json` and `.diagnostic` paths. Valid non-empty
 output retains the `.json` artifact. Non-empty invalid output retains the exact

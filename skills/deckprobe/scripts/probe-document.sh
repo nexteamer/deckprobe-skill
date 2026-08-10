@@ -24,7 +24,10 @@ fi
 # filesystem size rather than reading the file so sparse boundary fixtures and
 # large real documents are checked without an unbounded preliminary read.
 max_input_bytes=1073741824
-input_size=$(stat -c '%s' -- "$input" 2>/dev/null)
+# `input` may be a local attachment symlink. `-L` measures the target rather
+# than the link inode, so size limits, memory guards, and probe budgets cannot
+# be bypassed by exposing a large document through a short link path.
+input_size=$(stat -L -c '%s' -- "$input" 2>/dev/null)
 stat_status=$?
 if [ "$stat_status" -ne 0 ] || [ -z "$input_size" ]; then
     printf 'probe-document.sh: could not determine input size: %s\n' "$input" >&2

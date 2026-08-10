@@ -265,6 +265,31 @@ DECKPROBE_MEMINFO_PATH=
 record_result 'large PDF proceeds when available memory meets the threshold' \
     "[ $case_rc -eq 0 ] && [ $(call_count) -eq 2 ]"
 
+# A user attachment may be exposed through a local symlink. The target is
+# deliberately just over 128 MiB so the target size must drive both the memory
+# guard and the size-aware probe arguments; stat-ing the link itself would make
+# this fixture look tiny and incorrectly skip both decisions.
+symlink_target=$tmp_root/large-target.pdf
+symlink_pdf=$tmp_root/large-real.pdf
+truncate -s 134217729 -- "$symlink_target"
+ln -s -- "$symlink_target" "$symlink_pdf"
+reset_case symlink-low-memory
+DECKPROBE_MODE=valid
+DECKPROBE_MEMINFO_PATH=$low_meminfo
+run_wrapper "$symlink_pdf" "$case_dir/out"
+DECKPROBE_MEMINFO_PATH=
+record_result 'large PDF symlink uses target size for memory guard' \
+    "[ $case_rc -eq 69 ] && assert_no_probe_invocation && assert_file_contains $case_stderr 'insufficient MemAvailable'"
+
+reset_case symlink-enough-memory
+DECKPROBE_MODE=valid
+DECKPROBE_MEMINFO_PATH=$enough_meminfo
+run_wrapper "$symlink_pdf" "$case_dir/out"
+DECKPROBE_MEMINFO_PATH=
+probe_args=$(last_probe_args)
+record_result 'large PDF symlink uses target size for budget and timeout' \
+    "[ $case_rc -eq 0 ] && [ $(call_count) -eq 2 ] && printf '%s\\n' '$probe_args' | grep -F '<--probe-size>' >/dev/null && printf '%s\\n' '$probe_args' | grep -F '<135266305>' >/dev/null && printf '%s\\n' '$probe_args' | grep -F '<--timeout-ms>' >/dev/null && printf '%s\\n' '$probe_args' | grep -F '<60000>' >/dev/null"
+
 # An unavailable MemAvailable value is a pre-execution failure, not permission
 # to guess. Cover missing, unreadable, and malformed injected meminfo inputs;
 # each variant must refuse before version/probe calls and create no artifact.
