@@ -13,7 +13,7 @@ format defaults and security signals (`@default,@security`) at metadata level.
 The user does not need to name a target, and this Skill must not ask the user
 to choose one or replace the wrapper with a direct CLI invocation.
 
-The v0.3.1 wrapper accepts a file only when its size is at most 1 GiB
+The v0.3.2 wrapper accepts a file only when its size is at most 1 GiB
 (1,073,741,824 bytes). It applies a physical-read budget of
 `max(16 MiB, input size + 1 MiB)`; when that budget is above 16 MiB it gives the
 DeckProbe process a 60-second timeout. A PDF larger than 128 MiB is checked
@@ -22,8 +22,8 @@ against Linux `/proc/meminfo` before DeckProbe starts and is refused when
 do not raise DeckProbe's expanded-byte or archive-entry defaults. Do not retry
 with a larger limit, another parser, or a stale report.
 
-For a local attachment path exposed as a symlink, v0.3.1 measures the target
-file before applying the size, memory, and physical-budget policy.
+For a local attachment path exposed as a symlink, the wrapper measures the
+target file before applying the size, memory, and physical-budget policy.
 
 Return a business-first check card backed by the wrapper's unchanged schema-v2
 JSON artifact. The card explains whether the file is technically eligible for
@@ -96,7 +96,7 @@ and `deckprobe --version`. If either check fails, stop and point the user to
 do not use `sudo`, Docker, or a system-directory write.
 
 The wrapper is the only execution interface. It validates Linux, regular-file
-readability, dependency availability, the v0.3.1 size/resource policy, and
+readability, dependency availability, the v0.3.2 size/resource policy, and
 output. Use [the bundled wrapper](scripts/probe-document.sh) and invoke it
 exactly as:
 
@@ -253,6 +253,14 @@ the status in the card.
    state that no document bytes were interpreted. Use the localized
    missing-value phrase for every absent or unresolved field; do not infer zero,
    false, or an empty list.
+   Immediately before sending any five-section card, count the Markdown bullets
+   directly under `Developer Insights`. If there are more than five, merge
+   low-priority identity, version, hash, source, or duplicate evidence facts
+   into an existing completeness, primary-evidence, noteworthy-targets, or I/O
+   bullet; never emit a sixth bullet. If there are fewer than three, combine or
+   add compact bullets until the count is 3–5 while retaining the required
+   evidence roles. Recount after merging and do not send the card until this
+   gate passes; multiple roles may share one bullet.
 5. **Raw result / 原始结果** — for a `.json` path, provide a clickable Markdown
    link whose target is exactly the absolute artifact path printed by the
    wrapper and keep the JSON unchanged and downloadable, including a nonzero

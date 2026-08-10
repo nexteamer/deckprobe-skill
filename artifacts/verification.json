@@ -3,7 +3,7 @@
   "artifact_role": "Round 3 verification index",
   "status": "in_progress",
   "active_repository_authority": true,
-  "scope": "DeckProbe Skill v0.3.1 large-file, error-artifact, QA, release, installation, and fresh Codex E2E reliability work",
+  "scope": "DeckProbe Skill v0.3.2 large-file, error-artifact, QA, release, installation, and fresh Codex E2E reliability work",
   "authority": {
     "execution_ledger": "ROUND3_EXECUTION.md",
     "acceptance_contract": "ACCEPTANCE_CONTRACT.md",
@@ -17,9 +17,9 @@
     "OCR, rendering, extraction, summarization, conversion, URL, batch, Windows, macOS, and guaranteed Word or Pages page counts"
   ],
   "current_gate": {
-    "id": "R3-V031-PATCH-RELEASE",
+    "id": "R3-V032-PATCH-RELEASE",
     "status": "in_progress",
-    "required_next_event": "Validate the symlink-size fix and v0.3.1 docs, then repeat clean-clone, Docker, remote-install, host-install, and fresh Codex E2E gates"
+    "required_next_event": "Validate the v0.3.2 bullet-count hardening, install the exact remote candidate commit, pass every fresh Codex E2E journey, then publish the immutable tag"
   },
   "implementation_evidence": {
     "focused_wrapper_tests": {
@@ -86,22 +86,31 @@
     "installed Skill backup and pre/post hash evidence"
   ],
   "blocked_or_unverified": [
-    "GitHub v0.3.1 has not been published or clean-installed",
-    "The current installed Skill has not been replaced with v0.3.1",
+    "GitHub v0.3.2 candidate has not completed clean-clone and installed E2E gates",
+    "The current installed Skill has not been replaced with the v0.3.2 candidate",
     "Fresh installed Codex Skill E2E has not been executed"
   ],
-  "superseded_release": {
-    "tag": "v0.3.0",
-    "commit": "028d5a1048a445be411de8adb85aefba777316ea",
-    "status": "superseded_not_accepted",
-    "finding": "Fresh installed Codex E2E used a symlink to a 252009145-byte PDF; the wrapper measured the link itself and DeckProbe failed at the default 16 MiB physical budget.",
-    "disposition": "Preserve immutable v0.3.0 and publish the verified fix as v0.3.1; repeat all release-critical gates."
-  },
+  "superseded_releases": [
+    {
+      "tag": "v0.3.0",
+      "commit": "028d5a1048a445be411de8adb85aefba777316ea",
+      "status": "superseded_not_accepted",
+      "finding": "Fresh installed Codex E2E used a symlink to a 252009145-byte PDF; the wrapper measured the link itself and DeckProbe failed at the default 16 MiB physical budget.",
+      "disposition": "Preserve immutable v0.3.0 and supersede it."
+    },
+    {
+      "tag": "v0.3.1",
+      "commit": "1cc9d1c2a00f2dcc281ba4048efbb15a7e1c1f1c",
+      "status": "superseded_not_accepted",
+      "finding": "Fresh installed natural-language PPTX E2E emitted six Developer Insights bullets although the response contract allows only three to five.",
+      "disposition": "Preserve immutable v0.3.1; harden the pre-send bullet-count gate and validate the full v0.3.2 candidate before tagging."
+    }
+  ],
   "workflow_history": {
     "id": "WF-PORT-001",
     "status": "closed",
     "result": "DeckProbe-specific root workflow approved and promoted on 2026-08-10",
     "evidence": "agent-tasks.csv"
   },
-  "completion_claim": "V030_SUPERSEDED_V031_PATCH_IN_PROGRESS"
+  "completion_claim": "V030_V031_SUPERSEDED_V032_CANDIDATE_IN_PROGRESS"
 }

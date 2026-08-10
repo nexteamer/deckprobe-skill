@@ -1,4 +1,4 @@
-# DeckProbe Skill v0.3.1: install and first use
+# DeckProbe Skill v0.3.2: install and first use
 
 This package is a Linux-only Codex Skill. It checks one local PDF, Word, Excel,
 PowerPoint, Keynote, Pages, or Numbers file through the official `deckprobe`
@@ -6,14 +6,13 @@ CLI. The Skill is a routing and explanation layer; it does not contain a second
 document parser and it does not install the CLI for you.
 
 The release source is the public GitHub repository `nexteamer/deckprobe-skill`.
-Install the immutable `v0.3.1` ref only after the release gate has published
+Install the immutable `v0.3.2` ref only after the release gate has published
 that tag. Do not install from a local copy, mutable `main`, or an unreviewed
 binary. Public GitHub is the primary route; a Cloudflare mirror is only a
 fallback when the approved GitHub source is unavailable.
 
-Release note: v0.3.1 supersedes v0.3.0 for local attachment paths exposed as
-symlinks; v0.3.1 measures the target file before applying size, memory, and
-physical-budget policy.
+Local attachment paths exposed as symlinks are measured by their target file
+before the size, memory, and physical-budget policy is applied.
 
 ## 1. Install the official DeckProbe CLI
 
@@ -53,10 +52,10 @@ executable.
 
 Use an empty destination. The official Codex installer retrieves the Skill
 subtree from GitHub; it is not a copy-paste of files from this repository. Run
-it against the immutable `v0.3.1` ref after that tag is published:
+it against the immutable `v0.3.2` ref after that tag is published:
 
 ```sh
-python3 "${CODEX_HOME:-$HOME/.codex}/skills/.system/skill-installer/scripts/install-skill-from-github.py" --repo nexteamer/deckprobe-skill --path skills/deckprobe --ref v0.3.1
+python3 "${CODEX_HOME:-$HOME/.codex}/skills/.system/skill-installer/scripts/install-skill-from-github.py" --repo nexteamer/deckprobe-skill --path skills/deckprobe --ref v0.3.2
 ```
 
 Run it only when the destination Skill directory is empty. The network is
@@ -109,7 +108,7 @@ The Skill returns a five-section check card plus the exact artifact link.
 
 ## 4. Resource limits and truthful failures
 
-The v0.3.1 wrapper accepts files up to 1 GiB (1,073,741,824 bytes, inclusive).
+The v0.3.2 wrapper accepts files up to 1 GiB (1,073,741,824 bytes, inclusive).
 Its physical-read budget is `max(16 MiB, input size + 1 MiB)`; when the budget is
 above 16 MiB, the DeckProbe process receives a 60-second timeout. A PDF above
 128 MiB is checked before DeckProbe starts and requires Linux

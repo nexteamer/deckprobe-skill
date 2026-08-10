@@ -1,4 +1,4 @@
-# DeckProbe Skill v0.3.1 Execution Ledger
+# DeckProbe Skill v0.3.2 Execution Ledger
 
 Status: approved for long-running execution preparation; product implementation has not started.
 
@@ -6,7 +6,7 @@ This Markdown file is the single active execution ledger for Round 3. It is deli
 
 ## Objective
 
-Release DeckProbe Skill v0.3.1 as a reliable Linux, one-local-file document preflight that:
+Release DeckProbe Skill v0.3.2 as a reliable Linux, one-local-file document preflight that:
 
 - accepts files up to 1 GiB;
 - handles large PDFs within explicit physical-read, time, and memory bounds;
@@ -49,7 +49,7 @@ Use the four available slots as one main task plus three Junior Dev workers. Eac
 | --- | --- | --- | --- | --- |
 | `R3-IMP-A` | Junior Dev A | `skills/deckprobe/scripts/probe-document.sh`, focused wrapper contract test file | Size/memory policy, bounded command construction, error artifact preservation, exit-code fidelity, no stale output | completed; symlink revision and main rerun 20/20 pass |
 | `R3-IMP-B` | Junior Dev B | QA downloader, corpus runner, generated-boundary tooling, `qa/QA.csv` result updates | Reproducible 46-file corpus, isolated per-case evidence, public/private separation | completed; main 46-case run recorded |
-| `R3-IMP-C` | Junior Dev C | `skills/deckprobe/SKILL.md`, its direct reference and installation documentation, root recipient README | Updated runtime contract, page-count promise, failure/raw-result behavior, v0.3.1 recipient guidance | completed; v0.3.1 validator pass |
+| `R3-IMP-C` | Junior Dev C | `skills/deckprobe/SKILL.md`, its direct reference and installation documentation, root recipient README | Updated runtime contract, page-count promise, failure/raw-result behavior, v0.3.2 recipient guidance | completed after two revisions; v0.3.2 validator pass |
 | `R3-IMP-M` | Main task | Contract, ledger, verification index, integration decisions | Monitor ownership, resolve cross-lane interface mismatches, do not perform release-critical E2E early | completed; invalid-output finding resolved by Senior Dev |
 
 Workers may run focused tests for their files. They may not publish, tag, replace the installed Skill, change another lane's files, or claim end-to-end completion.
@@ -72,17 +72,17 @@ Exit gate: every required `qa/QA.csv` row for static, wrapper, corpus, and Docke
 
 - [ ] `R3-REL-001` Public diff contains only DeckProbe-active workflow, Skill, QA scripts/manifests, safe aggregate evidence, and recipient documentation.
 - [ ] `R3-REL-002` `workflow-source/`, `workflow-candidate/`, user fixtures, raw QA results, and local/private manifests remain unpublished.
-- [ ] `R3-REL-003` Push `release/v0.3.1`, clone the exact remote candidate into a fresh directory, reconstruct public/generated fixtures, and revalidate.
-- [ ] `R3-REL-004` After candidate validation, update `main`, create immutable tag `v0.3.1`, and publish the GitHub release.
-- [ ] `R3-REL-005` Install from the remote `v0.3.1` ref into an empty isolated Codex home and compare source/installed hashes.
+- [ ] `R3-REL-003` Push `release/v0.3.2`, clone the exact remote candidate into a fresh directory, reconstruct public/generated fixtures, and revalidate.
+- [ ] `R3-REL-004` After candidate and installed E2E validation, update `main`, create immutable tag `v0.3.2`, and publish the GitHub release.
+- [ ] `R3-REL-005` Install the remote v0.3.2 candidate commit into an empty isolated Codex home, compare hashes, complete installed E2E, then confirm the tag resolves to that exact commit.
 
-Release history note: immutable `v0.3.0` was published after its clean-clone gate, but the first fresh installed Codex large-PDF journey then exposed that a symlink path was measured as the link rather than its 252 MB target. The tag remains unchanged and does not close Round 3. `v0.3.1` is the required patch release and must repeat every release/install/E2E gate.
+Release history note: immutable `v0.3.0` was superseded after installed E2E exposed incorrect symlink target sizing. Immutable `v0.3.1` fixed that runtime issue but its natural-language E2E emitted six Developer Insights bullets, outside the 3–5 contract. Both tags remain unchanged and neither closes Round 3. `v0.3.2` must pass clean-clone, remote candidate install, complete fresh Codex E2E, and final tag-identity gates before publication.
 
 Exit gate: the published remote, clean clone, and isolated installed package have the intended immutable identity and all release-facing checks pass.
 
 ### Checkpoint 4 — installed user E2E and handoff
 
-- [ ] `R3-E2E-001` Back up the current installed Skill recoverably and install v0.3.1.
+- [ ] `R3-E2E-001` Back up the current installed Skill recoverably and install the exact v0.3.2 candidate commit; after E2E, confirm the immutable v0.3.2 tag has the same identity.
 - [ ] `R3-E2E-002` Verify the installed package and `codex debug prompt-input` Skill visibility.
 - [ ] `R3-E2E-003` The main task personally runs the required fresh `codex exec --ephemeral` journeys from `qa/QA.csv`.
 - [ ] `R3-E2E-004` Every response agrees with its current-run JSON and links only its own artifact.
@@ -105,7 +105,7 @@ Stop only for:
 
 ## Long-running Goal handoff
 
-Objective: implement and release DeckProbe Skill v0.3.1 until every required obligation in `ACCEPTANCE_CONTRACT.md`, every open row in this ledger, and every required evaluation in `qa/QA.csv` is terminally handled with current evidence.
+Objective: implement and release DeckProbe Skill v0.3.2 until every required obligation in `ACCEPTANCE_CONTRACT.md`, every open row in this ledger, and every required evaluation in `qa/QA.csv` is terminally handled with current evidence.
 
 Read first: `AGENTS.md`, `README/workflow-router.md`, `README/iteration-playbook.md`, this ledger, `ACCEPTANCE_CONTRACT.md`, `qa/QA.csv`, `artifacts/verification.json`, the Skill, wrapper, QA README, and public fixture manifest.
 

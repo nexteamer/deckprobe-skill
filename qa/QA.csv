@@ -31,9 +31,9 @@ ERROR-002,corpus,Unsupported legacy iWork,public-legacy-iwork,unsupported result
 DOCKER-001,docker,Real wrapper runtime representative matrix,mounted-corpus,"non-root network-disabled controlled-PATH run passes required cases",host-only or direct-CLI evidence,pass,output/deckprobe/e2e/docker-v031-20260810T153447Z-322991
 DOCKER-002,docker,Missing DeckProbe in container,controlled-container,fast exit 127 and no success artifact,host DeckProbe leakage,pass,Docker missing-dependency exit 127 no output
 DOCKER-003,docker,Large PDF in container,private-pdf-alias,477 pages and persistent host artifact,small PDF substituted,pass,Docker pdf-large current JSON persisted with 477 pages
-RELEASE-001,release,Clean GitHub clone,remote-v0.3.1,tracked tree and reconstructed public fixtures validate,local worktree used as substitute,planned,
+RELEASE-001,release,Clean GitHub clone,remote-v0.3.2-candidate,tracked tree and reconstructed public fixtures validate,local worktree used as substitute,planned,
 RELEASE-002,release,Remote Skill installation,empty-codex-home,installed hashes equal immutable tag source,copy-paste or mutable main,planned,
-INSTALL-001,install,Replace current installed Skill,host-codex-home,recoverable backup plus validated v0.3.1 install,destructive overwrite without rollback,planned,
+INSTALL-001,install,Replace current installed Skill,host-codex-home,recoverable backup plus validated v0.3.2 candidate install and final tag identity,destructive overwrite without rollback,planned,
 SKILL-001,codex,Explicit invocation,small-real-pdf,five-section card and exact current JSON link,direct CLI narrative only,planned,
 SKILL-002,codex,Natural-language invocation,real-pptx,Skill triggers and returns current slide evidence,Skill not loaded or wrong tool,planned,
 SKILL-003,codex,Large PDF user journey,private-pdf-alias,477-page card and actual I/O evidence,default-budget failure or stale report,planned,

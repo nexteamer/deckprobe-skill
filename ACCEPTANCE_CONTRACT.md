@@ -1,10 +1,10 @@
-# DeckProbe Skill v0.3.1 Acceptance Contract
+# DeckProbe Skill v0.3.2 Acceptance Contract
 
 Status: approved-scope contract; implementation and runtime evidence are not yet complete.
 
 ## Contract scope
 
-The deliverable is a v0.3.1 release of the existing Linux-only, one-local-file DeckProbe Skill. Immutable v0.3.0 remains historical but was superseded after installed E2E exposed incorrect large-file sizing through a symlink. The approved source is the user-confirmed Round 3 plan and the durable execution boundary in `ROUND3_EXECUTION.md`.
+The deliverable is a v0.3.2 release of the existing Linux-only, one-local-file DeckProbe Skill. Immutable v0.3.0 remains superseded after installed E2E exposed incorrect large-file sizing through a symlink; immutable v0.3.1 remains superseded after natural-language E2E emitted six Developer Insights bullets. The approved source is the user-confirmed Round 3 plan and the durable execution boundary in `ROUND3_EXECUTION.md`.
 
 Preserved behavior:
 
@@ -38,8 +38,8 @@ Non-goals: upstream Rust/CLI changes, LibreOffice or Office integration, OCR, re
 | `AC-R3-007` | Five-section card, recommendation precedence, scope boundaries, and raw-result behavior remain compatible for normal, partial, password, macro, error, and non-trigger cases. | Static validation plus fresh Codex E2E outputs and current raw artifacts. | Reading `SKILL.md` or using reconstructed JSON. | `R3-IMP-C`, `R3-E2E-003` | `SKILL-*` |
 | `AC-R3-008` | All 46 corpus inputs have isolated current-run wrapper results; public/generated inputs are reproducible and private inputs remain local and anonymized. | Aggregate plus per-case manifests; downloader/generator hash checks; publication scan. | Aggregate counts without terminal per-case records. | `R3-IMP-B`, `R3-QA-003`, `R3-QA-006` | `CORPUS-*`, `PRIVACY-001` |
 | `AC-R3-009` | Docker proves the real wrapper under non-root, network-disabled, controlled-PATH Linux execution, including large, security, failure, and dependency cases. | Current container identity, commands, mounts, exits, and artifacts. | Host-only execution or direct CLI output. | `R3-QA-007` | `DOCKER-*` |
-| `AC-R3-010` | v0.3.1 is published from the validated candidate and can be installed into an empty Codex home from the immutable GitHub ref with matching hashes. | Remote commit/tag/release identity, clean clone, installer output, and hash comparison. | v0.3.0, a local copy, mutable `main`, or source validation alone. | `R3-REL-003`–`R3-REL-005` | `RELEASE-*` |
-| `AC-R3-011` | The current installed Skill is recoverably backed up, replaced by v0.3.1, and visible to Codex; failure restores the backup. | Backup path, pre/post hashes, prompt-input visibility, and installed smoke. | Source and installed files merely sharing a name. | `R3-E2E-001`, `R3-E2E-002` | `INSTALL-*` |
+| `AC-R3-010` | v0.3.2 is published from the fully validated candidate and can be installed into an empty Codex home from the immutable GitHub ref with matching hashes. | Remote commit/tag/release identity, clean clone, candidate installer output, complete installed E2E, and final tag hash comparison. | v0.3.0/v0.3.1, a local copy, mutable `main`, or source validation alone. | `R3-REL-003`–`R3-REL-005` | `RELEASE-*` |
+| `AC-R3-011` | The current installed Skill is recoverably backed up, replaced by the exact v0.3.2 candidate that later receives the immutable tag, and visible to Codex; failure restores the backup. | Backup path, pre/post hashes, prompt-input visibility, installed smoke, and final tag identity. | Source and installed files merely sharing a name. | `R3-E2E-001`, `R3-E2E-002` | `INSTALL-*` |
 | `AC-R3-012` | The main task personally observes fresh installed Codex journeys and every response matches its own current-run JSON. | Ephemeral session prompts, final replies, exact JSON links/hashes, and case verdicts. | Child-agent summary, Docker pass, old session, or raw CLI alone. | `R3-E2E-003`, `R3-E2E-004` | `SKILL-*` |
 | `AC-R3-013` | The public release contains no private fixture identity/content, absolute local path, raw private result, neighboring-project source snapshot, or credential. | Clean-clone inventory, Git tracked-file check, path/secret/private-name scan. | `.gitignore` presence without inspecting the published tree. | `R3-QA-006`, `R3-REL-001`, `R3-REL-002` | `PRIVACY-*` |
 
@@ -70,7 +70,7 @@ The user explicitly removed Meta Regression and mandatory independent review. Be
 
 ## Long-running Goal boundary
 
-Objective: implement, validate, publish, install, and prove DeckProbe Skill v0.3.1 until every obligation above, every open `ROUND3_EXECUTION.md` row, and every required `qa/QA.csv` row is terminally handled.
+Objective: implement, validate, publish, install, and prove DeckProbe Skill v0.3.2 until every obligation above, every open `ROUND3_EXECUTION.md` row, and every required `qa/QA.csv` row is terminally handled.
 
 The new execution conversation reads the root Agent/workflow instructions, `ROUND3_EXECUTION.md`, this contract, `qa/QA.csv`, `artifacts/verification.json`, the current Skill/wrapper, and QA manifests before dispatching three Junior Dev lanes.
 

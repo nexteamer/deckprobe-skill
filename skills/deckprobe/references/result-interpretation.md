@@ -30,7 +30,7 @@ execution, link fetching, decryption, editing, conversion, or model inference.
 
 ## Runtime guard and current-run artifacts
 
-The v0.3.1 wrapper, not the language model, owns the preflight limits:
+The v0.3.2 wrapper, not the language model, owns the preflight limits:
 
 - The accepted input is one readable local regular file no larger than
   1,073,741,824 bytes (1 GiB, inclusive).
@@ -42,8 +42,8 @@ The v0.3.1 wrapper, not the language model, owns the preflight limits:
 - Expanded-byte and archive-entry defaults are not raised. There is no adaptive
   retry, alternate parser, automatic installation, or stale-report fallback.
 
-For a local attachment path exposed as a symlink, v0.3.1 measures the target
-file before applying the size, memory, and physical-budget policy.
+For a local attachment path exposed as a symlink, the wrapper measures the
+target file before applying the size, memory, and physical-budget policy.
 
 Each invocation reserves unique `.json` and `.diagnostic` paths. Valid non-empty
 output retains the `.json` artifact. Non-empty invalid output retains the exact
@@ -273,6 +273,18 @@ when combining it without losing required evidence:
    missing author, title, application, or application version can continue; a
    digital signature alone does not change the recommendation; and **可继续处理**
    is technical eligibility, never safety.
+
+#### Final bullet-count gate
+
+Immediately before sending any five-section card, count only the Markdown list
+items directly under `Developer Insights`. The count must be 3–5, never six.
+When more than five would be emitted, merge low-priority identity, version,
+hash, source, or duplicate evidence facts into an existing completeness,
+primary-evidence, noteworthy-targets, or I/O bullet; do not create a sixth
+bullet. When fewer than three would be emitted, combine or add compact bullets
+until the count is 3–5 while retaining the required evidence roles. Recount
+after merging; multiple roles may share one bullet, and the card must not be
+sent until this gate passes.
 
 For a `view: "values"` envelope, state that per-target status, confidence,
 path, and source are **not obtained in this probe** rather than reconstructing
@@ -684,9 +696,11 @@ do not invent a report link.
       exactly 结论, 文档概览, 需要注意, Developer Insights, 原始结果.
 - [ ] The first three sections are business-first and do not dump target IDs,
       paths, source fields, confidence, or I/O counters.
-- [ ] Every card has 3–5 compact Developer Insights bullets covering
+- [ ] Immediately before sending, count only direct Markdown bullets under
+      Developer Insights; merge low-priority identity/version/hash/source or
+      duplicate facts until the count is 3–5, never six. The bullets still cover
       completeness, primary evidence strength, noteworthy targets, actual I/O,
-      and the recommendation reason.
+      and the recommendation reason, with multiple roles allowed in one bullet.
 - [ ] Size/memory preflight, `ok`, `partial`, abnormal plan-only, risk, password, and error handling
       follows the explicit top-level and per-target statuses; abnormal plan-only
       is **无法继续**, never `ok` or **可继续处理**.
