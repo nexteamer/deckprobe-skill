@@ -1,7 +1,7 @@
 {
   "project": "DeckProbe Skill",
   "artifact_role": "Round 3 verification index",
-  "status": "in_progress",
+  "status": "complete",
   "active_repository_authority": true,
   "scope": "DeckProbe Skill v0.3.2 large-file, error-artifact, QA, release, installation, and fresh Codex E2E reliability work",
   "authority": {
@@ -17,9 +17,9 @@
     "OCR, rendering, extraction, summarization, conversion, URL, batch, Windows, macOS, and guaranteed Word or Pages page counts"
   ],
   "current_gate": {
-    "id": "R3-V032-PATCH-RELEASE",
-    "status": "in_progress",
-    "required_next_event": "Validate the v0.3.2 bullet-count hardening, install the exact remote candidate commit, pass every fresh Codex E2E journey, then publish the immutable tag"
+    "id": "R3-COMPLETE",
+    "status": "complete",
+    "required_next_event": null
   },
   "implementation_evidence": {
     "focused_wrapper_tests": {
@@ -50,7 +50,38 @@
       "large_pdf_pages": 477,
       "missing_dependency_exit": 127,
       "observed_by": "main task"
+    },
+    "clean_remote_candidate": {
+      "commit": "6215f363fe0fb03b378ed7e660ad8bd83ef7c13a",
+      "isolated_install_evidence": "output/deckprobe/e2e/remote-install-v032-candidate-20260810T154533Z",
+      "focused_wrapper_tests": "20 passed, 0 failed",
+      "public_and_generated_cases": 34,
+      "expected_error_reports": 5,
+      "privacy_scan": "passed"
+    },
+    "codex_e2e": {
+      "path": "output/deckprobe/e2e/codex-v032-candidate-20260810T154610Z",
+      "triggered_document_journeys": 10,
+      "nontrigger_and_refusal_journeys": 2,
+      "five_section_contract": "passed",
+      "developer_insights_bullet_gate": "3 to 5 in every triggered reply",
+      "installed_wrapper_used": true,
+      "current_artifacts_matched": true,
+      "observed_by": "main task"
     }
+  },
+  "release_evidence": {
+    "repository": "https://github.com/nexteamer/deckprobe-skill",
+    "tag": "v0.3.2",
+    "commit": "6215f363fe0fb03b378ed7e660ad8bd83ef7c13a",
+    "release_url": "https://github.com/nexteamer/deckprobe-skill/releases/tag/v0.3.2",
+    "tag_install_evidence": "output/deckprobe/e2e/remote-tag-install-v032-20260810T155741Z",
+    "tag_installed_hashes_match_source": true,
+    "host_installed_hashes_match_tag": true,
+    "host_install_evidence": "output/deckprobe/e2e/host-install-v032-candidate-20260810T154550Z",
+    "host_backup": "recoverable path retained in ignored local host-install evidence",
+    "prompt_input_visibility": "passed",
+    "published_tag_privacy_scan": "output/deckprobe/e2e/privacy-tag-v032-20260810T155846Z/scan.json"
   },
   "governance_validation": {
     "status": "passed",
@@ -85,11 +116,7 @@
     "remote GitHub commit, tag, release, clean-clone, and installer evidence",
     "installed Skill backup and pre/post hash evidence"
   ],
-  "blocked_or_unverified": [
-    "GitHub v0.3.2 candidate has not completed clean-clone and installed E2E gates",
-    "The current installed Skill has not been replaced with the v0.3.2 candidate",
-    "Fresh installed Codex Skill E2E has not been executed"
-  ],
+  "blocked_or_unverified": [],
   "superseded_releases": [
     {
       "tag": "v0.3.0",
@@ -112,5 +139,5 @@
     "result": "DeckProbe-specific root workflow approved and promoted on 2026-08-10",
     "evidence": "agent-tasks.csv"
   },
-  "completion_claim": "V030_V031_SUPERSEDED_V032_CANDIDATE_IN_PROGRESS"
+  "completion_claim": "VERIFIED_COMPLETE_V0.3.2"
 }

@@ -1,6 +1,6 @@
 # DeckProbe Skill v0.3.2 Execution Ledger
 
-Status: approved for long-running execution preparation; product implementation has not started.
+Status: complete; v0.3.2 is published, installed, and verified end to end.
 
 This Markdown file is the single active execution ledger for Round 3. It is deliberately used instead of adding Round 3 rows to `agent-tasks.csv`. `qa/QA.csv` is the evaluation oracle, not a task tracker. Chat summaries do not replace either file.
 
@@ -60,33 +60,33 @@ Exit gate: all three workers return usable final outputs, their owned validation
 
 - [x] `R3-QA-001` Static Skill validation and shell syntax pass.
 - [x] `R3-QA-002` Wrapper contract tests pass: 20/20, including regular and symlink size/budget paths, 1 GiB boundary, memory refusal/unavailable, nonzero valid and diagnostic artifacts, invalid/empty output, missing dependency, and stale-output pressure.
-- [x] `R3-QA-003` All 46 local corpus files received an isolated terminal current-run result through the final v0.3.1 wrapper at `qa/runs/20260810T153356Z-319578/`.
+- [x] `R3-QA-003` All 46 local corpus files received an isolated terminal current-run result through the runtime-identical final v0.3.2 wrapper at `qa/runs/20260810T153356Z-319578/`.
 - [x] `R3-QA-004` The private large-PDF alias returned `partial`, 477 pages, and 252,009,153 physical bytes read under the approved bounds.
 - [x] `R3-QA-005` The private DOCX alias without saved page statistics remained `partial`; `word.page_count` was `unknown` with no guessed value. Final user wording remains gated on Codex E2E.
-- [x] `R3-QA-006` The current publication candidate scan contains no private filename, private path/hash/content, credential, or neighboring-project history; this must be rerun on the remote clean clone.
-- [x] `R3-QA-007` Final v0.3.1 Docker runtime matrix passed at `output/deckprobe/e2e/docker-v031-20260810T153447Z-322991/` using `sudo -n docker`, uid/gid 1000, network disabled (`lo` only), controlled PATH, read-only root/input, writable outputs, representative formats, large/security/error cases, and missing dependency.
+- [x] `R3-QA-006` Candidate and exact published-tag scans contain no private filename, private path/hash/content, credential, or neighboring-project history.
+- [x] `R3-QA-007` The runtime-identical v0.3.2 wrapper Docker matrix passed at `output/deckprobe/e2e/docker-v031-20260810T153447Z-322991/` using `sudo -n docker`, uid/gid 1000, network disabled (`lo` only), controlled PATH, read-only root/input, writable outputs, representative formats, large/security/error cases, and missing dependency.
 
 Exit gate: every required `qa/QA.csv` row for static, wrapper, corpus, and Docker layers is `pass`, or the initiative is explicitly blocked with current evidence.
 
 ### Checkpoint 3 — GitHub release candidate
 
-- [ ] `R3-REL-001` Public diff contains only DeckProbe-active workflow, Skill, QA scripts/manifests, safe aggregate evidence, and recipient documentation.
-- [ ] `R3-REL-002` `workflow-source/`, `workflow-candidate/`, user fixtures, raw QA results, and local/private manifests remain unpublished.
-- [ ] `R3-REL-003` Push `release/v0.3.2`, clone the exact remote candidate into a fresh directory, reconstruct public/generated fixtures, and revalidate.
-- [ ] `R3-REL-004` After candidate and installed E2E validation, update `main`, create immutable tag `v0.3.2`, and publish the GitHub release.
-- [ ] `R3-REL-005` Install the remote v0.3.2 candidate commit into an empty isolated Codex home, compare hashes, complete installed E2E, then confirm the tag resolves to that exact commit.
+- [x] `R3-REL-001` Public diff contains only DeckProbe-active workflow, Skill, QA scripts/manifests, safe aggregate evidence, and recipient documentation.
+- [x] `R3-REL-002` `workflow-source/`, `workflow-candidate/`, user fixtures, raw QA results, and local/private manifests remain unpublished; the clean-tag scan is at `output/deckprobe/e2e/privacy-tag-v032-20260810T155846Z/scan.json`.
+- [x] `R3-REL-003` Remote candidate commit `6215f363fe0fb03b378ed7e660ad8bd83ef7c13a` was cloned into a fresh directory, reconstructed to 34 public/generated fixtures, and revalidated with 20/20 focused wrapper tests.
+- [x] `R3-REL-004` `main` was fast-forwarded to the accepted candidate; immutable tag and GitHub release `v0.3.2` were published at `https://github.com/nexteamer/deckprobe-skill/releases/tag/v0.3.2`.
+- [x] `R3-REL-005` The exact tag was installed into an empty isolated Codex home at `output/deckprobe/e2e/remote-tag-install-v032-20260810T155741Z`; source, tag-installed, and host-installed package hashes match commit `6215f363fe0fb03b378ed7e660ad8bd83ef7c13a`.
 
-Release history note: immutable `v0.3.0` was superseded after installed E2E exposed incorrect symlink target sizing. Immutable `v0.3.1` fixed that runtime issue but its natural-language E2E emitted six Developer Insights bullets, outside the 3–5 contract. Both tags remain unchanged and neither closes Round 3. `v0.3.2` must pass clean-clone, remote candidate install, complete fresh Codex E2E, and final tag-identity gates before publication.
+Release history note: immutable `v0.3.0` was superseded after installed E2E exposed incorrect symlink target sizing. Immutable `v0.3.1` fixed that runtime issue but its natural-language E2E emitted six Developer Insights bullets, outside the 3–5 contract. Both tags remain unchanged and neither closes Round 3. `v0.3.2` passed clean-clone, remote candidate install, complete fresh Codex E2E, and final tag-identity gates before publication.
 
 Exit gate: the published remote, clean clone, and isolated installed package have the intended immutable identity and all release-facing checks pass.
 
 ### Checkpoint 4 — installed user E2E and handoff
 
-- [ ] `R3-E2E-001` Back up the current installed Skill recoverably and install the exact v0.3.2 candidate commit; after E2E, confirm the immutable v0.3.2 tag has the same identity.
-- [ ] `R3-E2E-002` Verify the installed package and `codex debug prompt-input` Skill visibility.
-- [ ] `R3-E2E-003` The main task personally runs the required fresh `codex exec --ephemeral` journeys from `qa/QA.csv`.
-- [ ] `R3-E2E-004` Every response agrees with its current-run JSON and links only its own artifact.
-- [ ] `R3-E2E-005` Update `artifacts/verification.json`, this ledger, and the acceptance contract disposition; preserve rollback and residual-risk evidence.
+- [x] `R3-E2E-001` The prior Skill was backed up recoverably, with the host-only path retained in ignored local installation evidence; the installed package matches the v0.3.2 tag exactly.
+- [x] `R3-E2E-002` Package validation and `codex debug prompt-input` visibility passed; evidence is in `output/deckprobe/e2e/remote-tag-install-v032-20260810T155741Z`.
+- [x] `R3-E2E-003` The main task personally ran 12 fresh `codex exec --ephemeral` journeys: ten triggered document checks and two non-trigger/refusal journeys.
+- [x] `R3-E2E-004` All ten triggered replies used the installed wrapper, followed the five-section and 3–5-insight contract, matched their current-run JSON, and linked an existing artifact; the two boundary journeys invoked no probe and created no report.
+- [x] `R3-E2E-005` The verification index, this ledger, the contract disposition, QA oracle, rollback path, and residual scope are synchronized.
 
 Exit gate: all contract obligations are terminally handled. If replacement validation fails, restore the backup and report the release as incomplete.
 
@@ -105,7 +105,7 @@ Stop only for:
 
 ## Long-running Goal handoff
 
-Objective: implement and release DeckProbe Skill v0.3.2 until every required obligation in `ACCEPTANCE_CONTRACT.md`, every open row in this ledger, and every required evaluation in `qa/QA.csv` is terminally handled with current evidence.
+Objective: implemented and released. Every required obligation in `ACCEPTANCE_CONTRACT.md`, every row in this ledger, and every evaluation in `qa/QA.csv` is terminally handled with current evidence.
 
 Read first: `AGENTS.md`, `README/workflow-router.md`, `README/iteration-playbook.md`, this ledger, `ACCEPTANCE_CONTRACT.md`, `qa/QA.csv`, `artifacts/verification.json`, the Skill, wrapper, QA README, and public fixture manifest.
 

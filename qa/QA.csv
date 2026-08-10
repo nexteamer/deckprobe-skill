@@ -23,26 +23,26 @@ DOC-OFFICE-001,corpus,Large spreadsheet,private-xlsx-alias,current sheet count a
 DOC-OFFICE-002,corpus,CJK and space presentation path,private-pptx-alias,current slide count and isolated artifact,word-splitting or path breakage,pass,46-case run plus Docker CJK and space path
 DOC-IWORK-001,corpus,Modern Keynote,public-keynote-v6,current slide count and isolated artifact,legacy Keynote result substituted,pass,public-021 current JSON and Docker Keynote
 DOC-IWORK-002,corpus,Modern Numbers and Pages,public-modern-iwork,document-kind evidence and correct count boundary,cached Pages count called rendered pages,pass,46-case current JSON for modern iWork fixtures
-SECURITY-001,corpus,Password-protected PDF,public-password-pdf,recommendation requires password and JSON is linked,safe or generic failure wording,planned,
-SECURITY-002,corpus,Macro-bearing supported PPT,public-with-macros-ppt,recommendation requests review without malware verdict,macro executed or file called malicious,planned,
-SECURITY-003,corpus,Embedded file signal,public-embedded-pdf,review signal matches JSON,missing signal guessed false,planned,
+SECURITY-001,corpus,Password-protected PDF,public-password-pdf,recommendation requires password and JSON is linked,safe or generic failure wording,pass,output/deckprobe/e2e/codex-v032-candidate-20260810T154610Z/password-pdf
+SECURITY-002,corpus,Macro-bearing supported PPT,public-with-macros-ppt,recommendation requests review without malware verdict,macro executed or file called malicious,pass,output/deckprobe/e2e/codex-v032-candidate-20260810T154610Z/macro-ppt
+SECURITY-003,corpus,Embedded file signal,public-embedded-pdf,review signal matches JSON,missing signal guessed false,pass,output/deckprobe/e2e/codex-v032-candidate-20260810T154610Z/embedded-pdf
 ERROR-001,corpus,Malformed document,public-malformed-fixture,real error code and current error artifact when produced,successful check card,pass,public-025 and public-027 isolated current error JSON
 ERROR-002,corpus,Unsupported legacy iWork,public-legacy-iwork,unsupported result remains unable to continue,modern-format result substituted,pass,public-020 public-022 and public-024 current unsupported JSON
 DOCKER-001,docker,Real wrapper runtime representative matrix,mounted-corpus,"non-root network-disabled controlled-PATH run passes required cases",host-only or direct-CLI evidence,pass,output/deckprobe/e2e/docker-v031-20260810T153447Z-322991
 DOCKER-002,docker,Missing DeckProbe in container,controlled-container,fast exit 127 and no success artifact,host DeckProbe leakage,pass,Docker missing-dependency exit 127 no output
 DOCKER-003,docker,Large PDF in container,private-pdf-alias,477 pages and persistent host artifact,small PDF substituted,pass,Docker pdf-large current JSON persisted with 477 pages
-RELEASE-001,release,Clean GitHub clone,remote-v0.3.2-candidate,tracked tree and reconstructed public fixtures validate,local worktree used as substitute,planned,
-RELEASE-002,release,Remote Skill installation,empty-codex-home,installed hashes equal immutable tag source,copy-paste or mutable main,planned,
-INSTALL-001,install,Replace current installed Skill,host-codex-home,recoverable backup plus validated v0.3.2 candidate install and final tag identity,destructive overwrite without rollback,planned,
-SKILL-001,codex,Explicit invocation,small-real-pdf,five-section card and exact current JSON link,direct CLI narrative only,planned,
-SKILL-002,codex,Natural-language invocation,real-pptx,Skill triggers and returns current slide evidence,Skill not loaded or wrong tool,planned,
-SKILL-003,codex,Large PDF user journey,private-pdf-alias,477-page card and actual I/O evidence,default-budget failure or stale report,planned,
-SKILL-004,codex,Missing Word page count,private-docx-alias,not obtained plus cautious review wording,guess or corruption claim,planned,
-SKILL-005,codex,Large spreadsheet,private-xlsx-alias,current sheet-count card,file-size-only conclusion,planned,
-SKILL-006,codex,Modern Keynote,public-keynote-v6,current slide-count card,unsupported legacy sample substituted,planned,
-SKILL-007,codex,Password signal,public-password-pdf,password recommendation and structural-signal boundary,safety claim,planned,
-SKILL-008,codex,Macro signal,public-with-macros-ppt,review recommendation without malware verdict,malicious-file verdict,planned,
-SKILL-009,codex,Nonzero error JSON,malformed-or-budget-case,unable-to-continue card with current raw link,old report or fabricated fields,planned,
-SKILL-010,codex,Summary request non-trigger,one-pdf,DeckProbe is not invoked and no probe JSON is created,probing merely because a PDF exists,planned,
-SKILL-011,codex,URL folder and multi-file refusal,invalid-request-set,no automatic selection or batch,one input silently selected,planned,
-PRIVACY-001,release,Public tracked-tree privacy,clean-clone,no private identity path hash content credential or workflow snapshot,.gitignore treated as sufficient proof,planned,
+RELEASE-001,release,Clean GitHub clone,remote-v0.3.2-candidate,tracked tree and reconstructed public fixtures validate,local worktree used as substitute,pass,remote candidate 6215f363 clean install and 34-case public/generated run
+RELEASE-002,release,Remote Skill installation,empty-codex-home,installed hashes equal immutable tag source,copy-paste or mutable main,pass,output/deckprobe/e2e/remote-tag-install-v032-20260810T155741Z
+INSTALL-001,install,Replace current installed Skill,host-codex-home,recoverable backup plus validated v0.3.2 candidate install and final tag identity,destructive overwrite without rollback,pass,output/deckprobe/e2e/host-install-v032-candidate-20260810T154550Z with host-only backup path retained in ignored evidence
+SKILL-001,codex,Explicit invocation,real-pptx,five-section card and exact current JSON link,direct CLI narrative only,pass,output/deckprobe/e2e/codex-v032-candidate-20260810T154610Z/explicit-pptx
+SKILL-002,codex,Natural-language invocation,real-pptx,Skill triggers and returns current slide evidence,Skill not loaded or wrong tool,pass,output/deckprobe/e2e/codex-v032-candidate-20260810T154610Z/natural-pptx
+SKILL-003,codex,Large PDF user journey,private-pdf-alias,477-page card and actual I/O evidence,default-budget failure or stale report,pass,output/deckprobe/e2e/codex-v032-candidate-20260810T154610Z/large-pdf
+SKILL-004,codex,Missing Word page count,private-docx-alias,not obtained plus cautious review wording,guess or corruption claim,pass,output/deckprobe/e2e/codex-v032-candidate-20260810T154610Z/missing-page-docx
+SKILL-005,codex,Large spreadsheet,private-xlsx-alias,current sheet-count card,file-size-only conclusion,pass,output/deckprobe/e2e/codex-v032-candidate-20260810T154610Z/large-xlsx
+SKILL-006,codex,Modern Keynote,public-keynote-v6,current slide-count card,unsupported legacy sample substituted,pass,output/deckprobe/e2e/codex-v032-candidate-20260810T154610Z/keynote
+SKILL-007,codex,Password signal,public-password-pdf,password recommendation and structural-signal boundary,safety claim,pass,output/deckprobe/e2e/codex-v032-candidate-20260810T154610Z/password-pdf
+SKILL-008,codex,Macro signal,public-with-macros-ppt,review recommendation without malware verdict,malicious-file verdict,pass,output/deckprobe/e2e/codex-v032-candidate-20260810T154610Z/macro-ppt
+SKILL-009,codex,Nonzero error JSON,malformed-or-budget-case,unable-to-continue card with current raw link,old report or fabricated fields,pass,output/deckprobe/e2e/codex-v032-candidate-20260810T154610Z/error-numbers
+SKILL-010,codex,Summary request non-trigger,one-pdf,DeckProbe is not invoked and no probe JSON is created,probing merely because a PDF exists,pass,output/deckprobe/e2e/codex-v032-candidate-20260810T154610Z/summary-nontrigger
+SKILL-011,codex,URL folder and multi-file refusal,invalid-request-set,no automatic selection or batch,one input silently selected,pass,output/deckprobe/e2e/codex-v032-candidate-20260810T154610Z/invalid-request
+PRIVACY-001,release,Public tracked-tree privacy,clean-clone,no private identity path hash content credential or workflow snapshot,.gitignore treated as sufficient proof,pass,output/deckprobe/e2e/privacy-tag-v032-20260810T155846Z/scan.json

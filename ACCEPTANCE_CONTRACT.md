@@ -1,6 +1,6 @@
 # DeckProbe Skill v0.3.2 Acceptance Contract
 
-Status: approved-scope contract; implementation and runtime evidence are not yet complete.
+Status: verified complete for v0.3.2.
 
 ## Contract scope
 
@@ -44,6 +44,22 @@ Non-goals: upstream Rust/CLI changes, LibreOffice or Office integration, OCR, re
 | `AC-R3-013` | The public release contains no private fixture identity/content, absolute local path, raw private result, neighboring-project source snapshot, or credential. | Clean-clone inventory, Git tracked-file check, path/secret/private-name scan. | `.gitignore` presence without inspecting the published tree. | `R3-QA-006`, `R3-REL-001`, `R3-REL-002` | `PRIVACY-*` |
 
 All obligations allow only `verified`, `blocked_with_evidence`, or `unverified`. `partial` may describe product output, but it is not an acceptance-obligation terminal status.
+
+## Final obligation disposition
+
+| Obligation | Status | Binding evidence |
+| --- | --- | --- |
+| `AC-R3-001`–`AC-R3-005` | verified | 20/20 focused wrapper contract tests plus the 46-case isolated corpus run |
+| `AC-R3-006` | verified | 477-page large-PDF and unresolved Word-page JSON plus matching fresh Codex cards |
+| `AC-R3-007` | verified | Ten triggered and two boundary `codex exec --ephemeral` journeys under the installed Skill |
+| `AC-R3-008` | verified | 46 local cases, 34 clean-clone public/generated cases, pinned public sources, and private/public separation |
+| `AC-R3-009` | verified | Nine-case non-root, network-disabled, read-only-root Docker runtime matrix |
+| `AC-R3-010` | verified | GitHub tag/release `v0.3.2`, exact commit `6215f363fe0fb03b378ed7e660ad8bd83ef7c13a`, and empty-home tag installation with matching hashes |
+| `AC-R3-011` | verified | Recoverable host backup, installed-package hash equality, validator pass, and prompt-input visibility |
+| `AC-R3-012` | verified | Main-observed installed Codex E2E bundle at `output/deckprobe/e2e/codex-v032-candidate-20260810T154610Z` |
+| `AC-R3-013` | verified | Exact published-tag tracked-tree scan with 12 private identities and hashes checked and no findings |
+
+The evidence index is `artifacts/verification.json`; the row-level evaluation record is `qa/QA.csv`. Product output may still legitimately be `partial`, but no acceptance obligation remains blocked or unverified.
 
 ## Completion claim rules
 
