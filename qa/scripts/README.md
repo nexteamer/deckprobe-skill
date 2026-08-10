@@ -9,8 +9,10 @@ disposition, or dependency boundary.
 The Round 3 tooling closes that evidence gap:
 
 1. `prepare-corpus.sh` regenerates deterministic PDF boundary fixtures,
-   verifies the two pinned upstream security commits, downloads their bytes,
-   and emits `qa/CORPUS_MANIFEST.tsv`.
+   verifies every pinned upstream commit in `PUBLIC_SOURCES.tsv`, downloads
+   all 29 public fixture bytes, and emits `qa/CORPUS_MANIFEST.tsv`. Add
+   `--allow-missing-private` in a clean release checkout to produce the
+   34-case public/generated manifest without local user files.
 2. `build-corpus-manifest.py` keeps private fixtures as aliases only. The
    tracked manifest contains no private filename, path, size, or hash.
 3. `run-corpus.sh` invokes the wrapper exactly once per case in a unique
@@ -33,9 +35,8 @@ For a clean public checkout with no private user files, build a temporary
 public/generated manifest and run only those cases:
 
 ```sh
-python3 qa/scripts/build-corpus-manifest.py --allow-missing-private \
-  --output qa/runs/public-manifest.tsv
-qa/scripts/run-corpus.sh --manifest qa/runs/public-manifest.tsv --public-only
+qa/scripts/prepare-corpus.sh --allow-missing-private
+qa/scripts/run-corpus.sh --manifest qa/CORPUS_MANIFEST.tsv --public-only
 ```
 
 The ignored run tree is the source of full current-run evidence; `QA.csv` is
