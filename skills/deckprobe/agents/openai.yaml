@@ -1,0 +1,6 @@
+interface:
+  display_name: "DeckProbe"
+  short_description: "Inspect one local document and explain the result"
+  default_prompt: "Use $deckprobe to inspect this local document and return a plain-language document check with the raw JSON report."
+policy:
+  allow_implicit_invocation: true
