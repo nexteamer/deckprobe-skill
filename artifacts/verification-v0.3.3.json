@@ -1,0 +1,41 @@
+{
+  "candidate": "v0.3.3",
+  "scope": "source-only-business-insights",
+  "verified_at": "2026-08-11",
+  "status": "verified",
+  "implementation": {
+    "skill_sha256": "1af85c013eca885828de94ba718093fc3a885c84a35750e0ce262a0569ba6d06",
+    "reference_sha256": "998bbac6937967a1f2047f1130fb54b58b80dc9312c00039003b5408464cb4c6",
+    "wrapper_sha256": "b5b9cabffc22f742966b8f8fd28d73498a0dcced886bff5b750bdcb6e580277a",
+    "evaluator_sha256": "7bb970dd5186b8258f8a52a5fecd8c1c1895f669c63f1d76368c451f957f5e30"
+  },
+  "checks": {
+    "skill_validator": "pass",
+    "wrapper_contract": "20/20 pass",
+    "evaluator_unit_tests": "3/3 pass",
+    "same_json_before": "0/12 pass (expected RED)",
+    "same_json_after": "12/12 pass",
+    "fresh_normal": "pass",
+    "fresh_risk": "pass",
+    "fresh_missing_primary": "pass",
+    "fresh_error": "pass",
+    "fresh_explicit_technical": "pass",
+    "fresh_english": "pass",
+    "fresh_nontrigger": "pass",
+    "workspace_artifact_persistence": "pass",
+    "tracked_private_identity_scan": "pass"
+  },
+  "evidence": {
+    "same_json_ab": "output/deckprobe/evaluation/business-insights-v1-20260811",
+    "fresh_codex_e2e": "output/deckprobe/e2e/codex-v033-source-20260811",
+    "acceptance_contract": "ROUND4_ACCEPTANCE_CONTRACT.md",
+    "execution_ledger": "ROUND4_EXECUTION.md"
+  },
+  "release_boundary": {
+    "installed_version": "v0.3.2 unchanged",
+    "published_version": "v0.3.2 unchanged",
+    "published_release": "https://github.com/nexteamer/deckprobe-skill/releases/tag/v0.3.2",
+    "candidate_installed": false,
+    "candidate_published": false
+  }
+}

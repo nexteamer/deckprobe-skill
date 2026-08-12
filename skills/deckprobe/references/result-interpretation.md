@@ -12,7 +12,7 @@ execution, link fetching, decryption, editing, conversion, or model inference.
   - [Conclusion](#conclusion)
   - [Document overview](#document-overview)
   - [Attention](#attention)
-  - [Developer Insights](#developer-insights)
+  - [Decision Basis & Next Steps](#decision-basis--next-steps)
   - [Raw result](#raw-result)
 - [Runtime guard and current-run artifacts](#runtime-guard-and-current-run-artifacts)
 - [Language-localized missing values](#language-localized-missing-values)
@@ -30,7 +30,7 @@ execution, link fetching, decryption, editing, conversion, or model inference.
 
 ## Runtime guard and current-run artifacts
 
-The v0.3.2 wrapper, not the language model, owns the preflight limits:
+The v0.3.3 wrapper, not the language model, owns the preflight limits:
 
 - The accepted input is one readable local regular file no larger than
   1,073,741,824 bytes (1 GiB, inclusive).
@@ -56,29 +56,50 @@ produces no artifact, use **未生成** (or **not generated**) and preserve the 
 stderr/exit evidence; never search the output directory for a report from an
 earlier run or another input.
 
+In a normal Skill run, invoke the wrapper without an output-directory argument
+so the current report remains under the caller's workspace `output/deckprobe/`.
+Do not create a `/tmp` or `mktemp` destination for a user-visible report. A
+different output directory is allowed only when the user explicitly supplied a
+persistent workspace location.
+
 ## Five-section card
 
-Every successful, partial, or error user response is exactly these five ordered sections:
+Every successful, partial, or error user response is exactly these five ordered
+sections:
 
 1. **Conclusion**
 2. **Document overview**
 3. **Attention**
-4. **Developer Insights**
+4. **Decision Basis & Next Steps**
 5. **Raw result**
 
 For a Chinese card, the exact headings are **结论**, **文档概览**, **需要注意**,
-**Developer Insights**, and **原始结果**.  An error response keeps the same five
-headings but is explicitly not a successful document card: its overview and
-attention contain no fabricated document values, its Insights retain only the
-error evidence, and Raw result reports a missing artifact when none was
+**判断依据与下一步**, and **原始结果**.  The fourth section is a compact,
+business-facing explanation by default; it is not a dump of probe internals.
+An error response keeps the same five headings but is explicitly not a
+successful document card: its overview and attention contain no fabricated
+document values, its rationale section retains only the exact error evidence
+needed to troubleshoot, and Raw result reports a missing artifact when none was
 generated. A nonzero run with retained current JSON still has an error card and
 links that exact current artifact; an invalid-output diagnostic is explicitly
-labeled non-JSON evidence. Keep the first three sections business-readable and
-compact: do not
-put target IDs, parser paths, source fields, confidence values, or I/O counters
-there.  Put those technical details in the compact **Developer Insights**
-bullets and keep the original JSON in **Raw result**.  Never invent a value that
-is absent from `results`, `values`, `execution`, or the explicit error envelope.
+labeled non-JSON evidence.
+
+For normal `ok` or `partial` cards, keep the first three sections and the
+rationale bullets readable to product, operations, and document-platform users.
+Do not expose target IDs, top-level status, probe level, driver/profile,
+resolved/unknown labels, confidence values, parser paths, source fields,
+execution paths or cost counters there or in the default rationale bullets.
+Those details remain in the unchanged Raw result. If the user explicitly asks
+for technical detail, include only relevant low-level evidence in the rationale
+section; an error may include the exact error code and exit reason needed to
+diagnose it. Never invent a value that is absent from `results`, `values`,
+`execution`, or the explicit error envelope.
+
+In an ordinary `ok` or `partial` card, do not label the result as `metadata` /
+`元数据`, `技术路由`, `技术预检`, or `技术适用性`. Use `结构检查`, `后续处理建议`,
+or the direct business impact. Missing secondary structure such as word count
+stays out of the default card unless the user requested it or it changes the
+deterministic recommendation.
 
 ### Language-localized missing values
 
@@ -105,18 +126,19 @@ A machine-readable raw report remains unchanged.
 ### Conclusion
 
 Start with one deterministic recommendation from [Recommendation
-precedence](#recommendation-precedence) and its user impact; state the
-top-level `status` immediately afterward.  Include the bounded-check
-disclaimer: **可继续处理** means technically eligible for the next document
-tool, never safe; **建议复核** asks for a human or downstream check, not a
-malware finding.
+precedence](#recommendation-precedence), the main format/count fact, and its
+immediate user impact.  In a normal card do not print the top-level `status` or
+other internal labels; the status still controls the deterministic wording and
+remains in Raw result.  Include the bounded-check disclaimer: **可继续处理**
+means technically eligible for the next document tool, never safe; **建议复核**
+asks for a human or downstream check, not a malware finding.
 
 Use these status meanings:
 
 | JSON status | Card wording and meaning |
 | --- | --- |
-| `ok` | **Probe completed for the requested checks.** Required targets were obtained at or above their requested confidence. This does not mean every possible target was requested or that the document is safe. |
-| `partial` | **Probe completed with gaps.** At least one requested target is unresolved or below the requested confidence. Name the business-relevant gap in this section only; put its target ID and status in Developer Insights. A secondary metadata gap can still recommend **可继续处理**. |
+| `ok` | **Probe completed for the requested checks.** Required targets were obtained at or above their requested evidence strength. Present the recognized format and primary structure in business terms; do not print the status label. This does not mean every possible target was requested or that the document is safe. |
+| `partial` | **Probe completed with gaps.** At least one requested target is unresolved or below the requested evidence strength. Name only a business-relevant primary gap in the default card. A secondary metadata gap can still recommend **可继续处理** and should normally stay out of the card. |
 | `error` | **Probe failed before a usable document check.** Use the explicit error details and recommend **无法继续**; do not present identification, structure, or security conclusions as checked. If current-run JSON was retained, link it as failure evidence, not as a successful result. |
 
 The standard wrapper does not produce plan-only reports.  If an abnormal report
@@ -149,7 +171,8 @@ an empty list, or an empty string.
 statistical accuracy.  Never write “95% accurate”, “95% probability”, “one
 percent error”, or similar language for `high` (`0.95`) or `exact` (`1.0`). Use
 “strong direct evidence” for `high`, “deterministic/exact path evidence” for
-`exact`, and “lower method confidence” for `estimated`.  In the compact
+`exact`, and “lower method confidence” for `estimated` only when the user asks
+for technical detail or when an error requires it.  In the compact
 `view: "values"` envelope, per-target confidence, path, source, and status are
 not carried; they are **not obtained in this probe** and must not be
 reconstructed from a value or the top-level status.
@@ -158,21 +181,20 @@ reconstructed from a value or the top-level status.
 
 Show only the user-facing identity and primary structure that the report
 explicitly provides.  Do not append target IDs, paths, source kinds, confidence,
-diagnostics, or I/O counters to these rows; Developer Insights preserves that
-technical evidence.  Use the exact `input.display_name` and byte size (with a
-humanized form) when present, then the detected format/profile and the format's
-main count or package structure.  If a value is absent, unresolved, or `null`,
-use the localized missing sentinel.
+diagnostics, or I/O counters to these rows.  Use the exact `input.display_name`
+and byte size (with a humanized form) when present, then the detected friendly
+format and the format's main count or package structure.  If a value is absent,
+unresolved, or `null`, use the localized missing sentinel.
 
 The identity mappings remain:
 
 | User-facing label | JSON path | Rendering rule |
 | --- | --- | --- |
 | Name | `input.display_name` | Show as supplied. |
-| Source kind | `input.source_kind` | Keep for Developer Insights; do not put it in the first three sections. Values include `local_file`, `stdin`, or another explicit value. |
+| Source kind | `input.source_kind` | Keep in Raw result; do not put it in the default card. Values include `local_file`, `stdin`, or another explicit value. |
 | Size | `input.file_size` | Show exact bytes and a humanized form when a size is available. |
-| Driver | `driver.id` | Keep the detected driver for Developer Insights; a friendly format name may appear in the overview. |
-| Profile | `driver.profile` | Keep the detected profile/suffix family for Developer Insights. |
+| Driver | `driver.id` | Keep in Raw result; a friendly format name may appear in the overview. |
+| Profile | `driver.profile` | Keep in Raw result; do not expose it in the default card. |
 | Format | `results["document.format"].value` | Show only an explicit value. |
 | Format profile | `results["document.format_profile"].value` | Show only an explicit value. |
 | MIME type | `results["document.mime_type"].value` | Show only an explicit value. |
@@ -190,19 +212,19 @@ resolved `false` signals are merged into one sentence such as “No positive
 security or integrity signal was detected by the requested paths.”  A false
 value is never a warning.  An absent, unresolved, or `null` signal is not false:
 show it as the localized missing sentinel only when it is critical to the
-recommendation, otherwise keep it in Developer Insights.
+recommendation, otherwise keep it in Raw result.
 
 Apply this attention precedence to value-bearing results (`resolved` or
 `estimated`):
 
 | Priority | Signal | Plain-language wording |
 | ---: | --- | --- |
-| 1 | `security.encrypted: true` | “Encrypted container/content detected; readability may be limited.” |
+| 1 | `security.encrypted: true` | “Encrypted content was detected; readability may be limited.” |
 | 2 | `security.password_protected: true` | “A non-empty password is required to read protected content.” |
 | 3 | PDF `security.active_content_risk` = `high`, `medium`, or `low` | Use the rule-based wording below. |
-| 4 | `security.has_macros: true` | “Embedded Office macro project detected; DeckProbe did not execute it.” |
-| 5 | `security.has_embedded_files: true` | “Embedded files or package objects are present.” |
-| 6 | `security.has_external_relationships: true` | “Relationships point outside the package; DeckProbe did not fetch them.” |
+| 4 | `security.has_macros: true` | “文档包含可执行的 Office 宏，但本次没有执行。” In English: “The document contains executable Office macros; they were not executed in this probe.” |
+| 5 | `security.has_embedded_files: true` | “文档内部附带了其他文件或对象。” In English: “The document contains additional files or objects.” |
+| 6 | `security.has_external_relationships: true` | “文档中包含指向文件外部的链接或资源引用。” In English: “The document contains links or resource references outside the file.” DeckProbe did not visit them; advise confirming their destination and necessity. |
 | 7 | `security.has_digital_signature: true` or `security.signature_count > 0` | “Digital-signature structures are present; cryptographic validity was not checked.” This is a neutral informational signal and never by itself a review trigger. |
 | 8 | `quality.corrupted: true` or `quality.missing_assets: true` | State the exact quality signal in plain language. |
 
@@ -240,59 +262,90 @@ For a Chinese card, use this exact boundary:
 
 Detailed limits (for example, that DeckProbe does not execute macros or PDF
 active content, follow external relationships, decrypt protected content, or
-validate signature cryptography) may be retained in Developer Insights or Raw
-result.  They are not a mandatory long disclaimer in Attention.  An unresolved
-signal still uses the exact localized missing-value sentinel.
+validate signature cryptography) may be retained in the rationale section when
+the user asks for technical detail, or in Raw result.  They are not a mandatory
+long disclaimer in Attention.  An unresolved signal still uses the exact
+localized missing-value sentinel.
 
-### Developer Insights
+### Decision Basis & Next Steps
 
-This section is always present and has **3–5 compact bullets** (the canonical
-examples below use five).  It is the only card section, apart from Raw result,
-that should carry low-level proof.  Use these five roles and omit a role only
-when combining it without losing required evidence:
+This section is always present and has **3–4 compact Markdown bullets**.  The
+default bullets answer these business questions in order:
 
-1. **Completeness:** top-level `status`, `execution.probe_level`, explicit
-   `execution.unresolved_targets`, per-target non-value statuses, diagnostics
-   (`code` and `message`), and `execution.piggyback_targets` when present.
-2. **Primary evidence:** driver/profile, source kind, primary structure values,
-   each value's status and evidence strength (`confidence` and
-   `confidence_score` when carried), and the recognized format identity. Explain
-   confidence as method/evidence strength, never probability.
-3. **Noteworthy targets:** target IDs for positive attention signals, critical
-   missing identity/password/primary-count targets, and any key secondary
-   metadata gap that explains a `partial` result. Do not repeat every ordinary
-   false flag.
-4. **Measured I/O:** `execution.paths` in reported order,
-   `execution.estimated_cost` as path-cost units, and explicit
-   `execution.actual_cost.physical_bytes_read`, `expanded_bytes`,
-   `random_reads`, and optional `elapsed_ms`. Include the wrapper's explicit
-   size/budget/timeout or memory-guard outcome when it is reported. Never
-   estimate a missing counter.
-5. **Recommendation reason:** name exactly which precedence rule won and classify
-   missing fields as primary or secondary. State that a `partial` caused only by
-   missing author, title, application, or application version can continue; a
-   digital signature alone does not change the recommendation; and **可继续处理**
-   is technical eligibility, never safety.
+1. **Reason:** why the recommendation follows from the format, primary count,
+   or positive signal that was explicitly obtained.
+2. **Impact:** what the finding may affect for upload, sharing, downstream
+   processing, splitting, measurement, or completeness checks.
+3. **Action:** what the user or downstream system should do next, using the
+   user's existing document workflow or a manual review when appropriate.
+4. **Useful scope/cost only when it changes a decision:** whether the check was
+   complete and lightweight, or which meaningful field/cost was not obtained.
+   Omit this bullet when it adds no decision value.
+
+Keep normal `ok` and `partial` cards in everyday business language.  Do not
+expose top-level status, probe level, driver/profile, target IDs,
+resolved/unknown labels, confidence values, parser paths, source fields,
+`execution.paths`, estimated-cost units, random-read counts, or package
+relationship terminology in these default bullets.  Do not mention optional
+author, title, application, or application-version gaps unless the user asks
+for that metadata or the gap changes a decision.  These details remain in Raw
+result.
+
+Translate the signals that can change a decision as follows:
+
+- An external relationship means **文档中包含指向文件外部的链接或资源引用**
+  (English: “The document contains links or resource references outside the
+  file”).  The probe did not visit those targets; advise confirming their
+  destination and necessity.
+- An embedded file means **文档内部附带了其他文件或对象** (English: “The
+  document contains additional files or objects”); advise confirming source
+  and purpose.
+- A macro means **文档包含可执行的 Office 宏，但本次没有执行** (English:
+  “The document contains executable Office macros; they were not executed in
+  this probe”); advise review before opening or forwarding.
+- An unresolved format-specific primary count means **文件可以识别，但关键页数、幻灯片数或工作表数本次未取得** (English: “The file is recognized, but the key page, slide, or worksheet count was not obtained in this probe”).  If the
+  count matters, recommend confirmation through the user's existing document
+  workflow or manual review.  Do not call the file corrupt.
+- A secondary metadata gap is omitted unless it changes a user decision.  Never
+  turn an absent value into `false` or zero; use the localized missing sentinel
+  whenever the gap must be stated.
+
+For normal positive or absent signals, explain the business meaning and action,
+not the field name.  When security signals are shown, retain the concise
+boundary from [Attention](#attention); these are structural signals, not a
+security certification or malware conclusion.
+
+#### Technical-detail and error exception
+
+If the user explicitly asks for technical detail, the rationale bullets may
+include only relevant low-level evidence needed to answer that request.  If the
+report or wrapper is an error, retain the exact error code, message, target
+status, and exit reason needed to troubleshoot.  In those two cases, the
+following evidence may be named when present: `status`, `execution.probe_level`,
+`execution.unresolved_targets`, diagnostics, driver/profile, source kind,
+primary-target status/confidence/path/source, `execution.paths`,
+`execution.estimated_cost`, and actual physical/expanded bytes, random reads,
+or elapsed time.  Do not expose unrelated details, invent omitted counters, or
+change the Raw result.  A technical-detail request does not change the four
+recommendation states or the five-section order.
 
 #### Final bullet-count gate
 
 Immediately before sending any five-section card, count only the Markdown list
-items directly under `Developer Insights`. The count must be 3–5, never six.
-When more than five would be emitted, merge low-priority identity, version,
-hash, source, or duplicate evidence facts into an existing completeness,
-primary-evidence, noteworthy-targets, or I/O bullet; do not create a sixth
-bullet. When fewer than three would be emitted, combine or add compact bullets
-until the count is 3–5 while retaining the required evidence roles. Recount
-after merging; multiple roles may share one bullet, and the card must not be
-sent until this gate passes.
+items directly under **Decision Basis & Next Steps**.  The default count
+must be 3–4, never five or more.  Merge duplicate reason, impact, action, or
+scope facts when necessary; do not create an extra bullet.  If only three
+business answers are useful, omit the optional scope/cost bullet.  For an error
+or an explicit technical-detail request, keep the same compact 3–4-bullet
+shape while replacing only the facts needed for diagnosis.  Recount after
+merging; the card must not be sent until this gate passes.
 
-For a `view: "values"` envelope, state that per-target status, confidence,
-path, and source are **not obtained in this probe** rather than reconstructing
-them. Keep this section compact enough to scan; the complete machine evidence
-belongs in Raw result.
+For a `view: "values"` envelope, do not reconstruct per-target status,
+confidence, path, or source from a value or top-level status.  They are **not
+obtained in this probe** and belong only in Raw result when supplied.
 
-Byte counters in the I/O bullet retain their exact integers and use binary
-humanization:
+When a technical-detail or error bullet includes byte counters, retain their
+exact integers and use binary humanization:
 
 | Range | Unit |
 | --- | --- |
@@ -326,8 +379,9 @@ link.
 ## Format structure field map
 
 The overview gives only the main structure value.  These are the complete
-format mappings that may be projected into Developer Insights or Raw result;
-report only keys present in the result and preserve reported order and units.
+format mappings that may be projected into the rationale section only when the
+user asks for technical detail, or into Raw result; report only keys present in
+the result and preserve reported order and units.
 The **primary structure field** is the automatic metadata-level count for that
 format.  A missing primary field is a critical gap for recommendation purposes,
 except that Pages has no required current page-count target at metadata level.
@@ -520,30 +574,26 @@ JSON fallback.
 ### Example: `ok`
 
 ```text
-Conclusion
+## Conclusion
 Recommendation: 可继续处理 (continue processing).
-Probe completed for the requested checks. The recognized presentation has its
-primary slide count; this is technical eligibility for the next document tool,
-not a safety verdict.
-Status: ok.
+The recognized presentation has 12 slides, so it can move to the next document
+processing step.  This is technical eligibility, not a safety verdict.
 
-Document overview
+## Document overview
 sales-deck.pptx — PowerPoint presentation, 12 slides, 1 hidden slide, landscape
 canvas 13.333 × 7.5 pt.
 
-Attention
-No positive security or integrity signal was detected by the requested paths.
-Resolved false signals are merged. These are structural signals, not a security
-certification or malware conclusion.
+## Attention
+No positive security or integrity signal was detected by the requested checks.
+These are structural signals, not a security certification or malware conclusion.
 
-Developer Insights
-- Completeness: status `ok`; metadata check; no unresolved targets; no diagnostics.
-- Primary evidence: PowerPoint identity and slide count have exact/deterministic path evidence; source and driver/profile are retained in the raw report.
-- Noteworthy targets: `powerpoint.slide_count=12`, `powerpoint.hidden_slide_count=1`; ordinary resolved-false security flags are not repeated.
-- I/O: paths and cost units are `execution` values; physical/expanded bytes, random reads, and optional elapsed time are copied exactly (elapsed: **not obtained in this probe**).
-- Recommendation: **可继续处理** won because the recognized format has its primary count and no higher-precedence signal matched; **可继续处理** never means safe.
+## Decision Basis & Next Steps
+- The format and 12-slide primary count were obtained, so no review trigger was found.
+- The file can proceed to upload, sharing, or the existing document workflow.
+- Continue with the normal downstream process and apply the business team's existing file-safety rules.
+- The decision-relevant structure was obtained with a lightweight check.
 
-Raw result
+## Raw result
 <exact artifact link to the unchanged schema-v2 JSON printed by the wrapper>
 ```
 
@@ -553,138 +603,127 @@ This example demonstrates that secondary metadata alone does not block the next
 step:
 
 ```text
-Conclusion
+## Conclusion
 Recommendation: 可继续处理 (continue processing).
-Probe completed with gaps: optional author/application metadata is **not obtained in this probe**. The primary Word page count was obtained, so this partial result can continue.
-Status: partial.
+The recognized Word document has 8 pages and can continue to the next document
+processing step.  This is technical eligibility, not a safety verdict.
 
-Document overview
+## Document overview
 quarterly-report.docx — Word document, 8 pages, 42 paragraphs, 3 tables.
 
-Attention
-No positive security or integrity signal was detected by the requested paths.
-The missing optional metadata is not a safety finding. These are structural
-signals, not a security certification or malware conclusion.
+## Attention
+No positive security or integrity signal was detected by the requested checks.
+No additional action is needed for the secondary information that is not shown
+here.  These are structural signals, not a security certification or malware
+conclusion.
 
-Developer Insights
-- Completeness: status `partial`; metadata check; unresolved targets identify only secondary author/application fields; diagnostic code is copied exactly.
-- Primary evidence: `word.page_count=8` is resolved with strong direct evidence; missing secondary fields are not promoted to primary gaps.
-- Noteworthy targets: `document.author` and `office.application` are **not obtained in this probe**; no primary format or count target is unresolved.
-- I/O: `execution.paths`, estimated path cost units, and actual byte/random-read counters are copied exactly; omitted elapsed time remains **not obtained in this probe**.
-- Recommendation: **可继续处理** wins because only secondary metadata is missing; partial status alone does not recommend review.
+## Decision Basis & Next Steps
+- The Word format and primary 8-page count were obtained, so the remaining gap does not change the recommendation.
+- Upload, sharing, and downstream processing can continue; the omitted secondary information is not needed for this decision.
+- Continue through the existing document workflow and request additional metadata only if a later business decision requires it.
 
-Raw result
+## Raw result
 <exact artifact link to the unchanged schema-v2 JSON printed by the wrapper>
 ```
 
 ### Example: `partial` (Chinese rendering)
 
 ```text
-结论
+## 结论
 建议：可继续处理。
-探测完成，但存在缺口：可选作者信息本次未取得。主要页数已取得，因此可以继续下一步文档工具处理；这不是安全结论。
-状态：partial。
+该 Word 文档共 8 页，主要结构信息已取得，可以继续下一步文档处理；这不是安全结论。
 
-文档概览
+## 文档概览
 quarterly-report.docx — Word 文档，8 页，42 个段落，3 个表格。
 
-需要注意
-所选检查未发现正向安全或完整性信号；明确取得的 false 信号合并呈现。
-缺少可选信息不是安全判定。这些是结构信号，不是安全认证或恶意软件结论。
+## 需要注意
+所选检查未发现正向安全或完整性信号。这些是结构信号，不是安全认证或恶意软件结论。
 
-Developer Insights
-- 完整度：status 为 `partial`；metadata 检查；未解析目标只包含次要作者字段，诊断按原报告保留。
-- 主要证据：`word.page_count=8` 为 resolved，具有强直接证据；confidence 表示证据强度，不是概率。
-- 值得关注的目标：`document.author` 本次未取得；没有未解析的主要格式或页数目标。
-- I/O：`execution.paths`、预计路径成本单位和实际计数按原报告复制；缺少的耗时写作本次未取得。
-- 建议原因：只缺少次要元数据，命中可继续处理；partial 本身不触发复核。
+## 判断依据与下一步
+- Word 格式和 8 页主要数量已取得，未显示的次要信息不改变继续处理的判断。
+- 上传、分享和后续文档处理可以继续；当前决定不依赖那些次要信息。
+- 继续使用现有文档流程；只有后续业务需要时，再单独确认额外元数据。
 
-原始结果
+## 原始结果
 <wrapper 打印的绝对路径对应的 exact artifact link；schema-v2 JSON 未修改>
 ```
 
 ### Example: risk
 
 ```text
-Conclusion
+## Conclusion
 Recommendation: 建议复核 (review recommended).
-Probe completed for the requested checks, but a positive structural risk signal
-needs review before the next document tool.
-Status: ok.
+The PowerPoint contains 5 slides and an executable Office macro.  Review it
+before opening, forwarding, or continuing document processing.
 
-Document overview
+## Document overview
 macro-enabled.pptm — PowerPoint presentation, 5 slides, landscape.
 
-Attention
-Embedded Office macro project detected; DeckProbe did not execute it. Digital-
-signature structures are present; cryptographic validity was not checked.
-These are structural signals, not a security certification or malware
-conclusion.
+## Attention
+The document contains executable Office macros; they were not executed in this
+probe.  Digital-signature structures, when present, are informational only;
+cryptographic validity was not checked.  These are structural signals, not a
+security certification or malware conclusion.
 
-Developer Insights
-- Completeness: status `ok`; metadata check; unresolved targets and diagnostics are copied from the report.
-- Primary evidence: `powerpoint.slide_count=5` is resolved with strong direct evidence; confidence is method strength, never probability.
-- Noteworthy targets: `security.has_macros=true`, `security.has_digital_signature=true`; the signature is informational and is not itself a review trigger.
-- I/O: selected paths, estimated path-cost units, and actual physical/expanded bytes, random reads, and elapsed time are copied from `execution`.
-- Recommendation: **建议复核** is selected by the positive macro rule; no OCR, Render, Parse, or model inference is suggested.
+## Decision Basis & Next Steps
+- Review is recommended because the document contains an executable Office macro that was not executed in this probe.
+- The macro may change what happens when the file is opened or forwarded, so downstream handling should treat it as an additional dependency.
+- Confirm the macro's source and business need, then follow the existing approval process before opening or sharing the file.
+- The slide count and macro signal were obtained; no extra technical detail is needed for this decision.
 
-Raw result
+## Raw result
 <exact artifact link to the unchanged schema-v2 JSON printed by the wrapper>
 ```
 
 ### Example: password
 
 ```text
-Conclusion
+## Conclusion
 Recommendation: 需要密码 (password required).
-Probe completed, but a non-empty password is required to read protected content.
-Status: partial.
+A non-empty password is required to read the protected PDF; provide it through
+the existing authorized workflow before continuing.
 
-Document overview
+## Document overview
 locked-report.pdf — PDF document; current page count **not obtained in this probe**.
 
-Attention
-A non-empty password is required to read protected content. Encrypted
-container/content was detected; readability may be limited.
-These are structural signals, not a security certification or malware
-conclusion.
+## Attention
+A non-empty password is required to read protected content.  Encrypted content
+was detected and readability may be limited.  These are structural signals, not
+a security certification or malware conclusion.
 
-Developer Insights
-- Completeness: status `partial`; unresolved targets include the page count; diagnostics and per-target statuses are preserved.
-- Primary evidence: encryption and password signals are reported independently; `security.password_protected=true` is resolved with strong direct evidence.
-- Noteworthy targets: `pdf.page_count` is **not obtained in this probe**; `security.encrypted=true` and the resolved password requirement are retained.
-- I/O: execution paths and all available actual counters are copied exactly; any omitted counter is **not obtained in this probe** rather than zero.
-- Recommendation: **需要密码** wins before review because the password requirement is explicitly resolved; no decryption, OCR, Render, or Parse is proposed.
+## Decision Basis & Next Steps
+- The explicit password requirement takes precedence over other review states.
+- Without the authorized password, the document cannot be read or handed to the next processing step.
+- Obtain the password through the existing access process, then rerun the requested document check.
+- The current page count is **not obtained in this probe** and should not be guessed.
 
-Raw result
+## Raw result
 <exact artifact link to the unchanged schema-v2 JSON printed by the wrapper>
 ```
 
 ### Example: error
 
 ```text
-Conclusion
+## Conclusion
 Recommendation: 无法继续 (cannot continue).
-Probe failed before a usable document check. No document-check conclusions are
-available.
-Status: error.
+The wrapper/CLI failed before a usable document check, so no format, structure,
+or safety conclusion is available.
 
-Document overview
-The requested local input could not be checked; format and primary structure
-are **not obtained in this probe**.
+## Document overview
+The requested local input could not be checked; format and primary structure are
+**not obtained in this probe**.
 
-Attention
-The wrapper/CLI failure is the critical issue. No security or readability
-conclusion is inferred from the filename.
+## Attention
+The wrapper/CLI failure is the critical issue.  Do not infer a document
+conclusion from the filename or from the failed run.
 
-Developer Insights
-- Completeness: report status is `error`; `{error.code}` and `{error.message}` are copied exactly; no targets were treated as resolved.
-- Primary evidence: driver, profile, source, format, and primary count are **not obtained in this probe**.
-- Noteworthy targets: the failing wrapper/CLI operation and its exit code are retained as the decisive evidence.
-- I/O: no document-byte counters are claimed; any unavailable execution field is **not obtained in this probe**.
-- Recommendation: **无法继续** wins for wrapper/CLI or report failure; retrying with another parser or suggesting an unimplemented capability is outside this reference.
+## Decision Basis & Next Steps
+- No usable document check was produced; the exact failure is `{error.code}` — `{error.message}` (exit `{error.exit_code}`).
+- Format, primary counts, and downstream readability are unknown, so the file should not enter the next processing step yet.
+- Preserve the wrapper stderr and exit evidence, correct the reported input or environment issue, and rerun the existing command.
+- No current JSON artifact was produced in this example, so there is no report link to inspect.
 
-Raw result
+## Raw result
 No JSON artifact was produced. Preserve the wrapper stderr and exit code here;
 do not invent a report link.
 ```
@@ -692,15 +731,21 @@ do not invent a report link.
 ## Self-check before handoff
 
 - [ ] The card has exactly five sections in order: Conclusion, Document
-      overview, Attention, Developer Insights, Raw result; Chinese cards use
-      exactly 结论, 文档概览, 需要注意, Developer Insights, 原始结果.
-- [ ] The first three sections are business-first and do not dump target IDs,
-      paths, source fields, confidence, or I/O counters.
+      overview, Attention, Decision Basis & Next Steps, Raw result;
+      Chinese cards use exactly 结论, 文档概览, 需要注意, 判断依据与下一步,
+      原始结果.  Headings are unnumbered and exact.
+- [ ] The first three sections and the default rationale bullets are
+      business-first and do not dump target IDs, status labels, paths, source
+      fields, confidence, parser details, or I/O counters.
 - [ ] Immediately before sending, count only direct Markdown bullets under
-      Developer Insights; merge low-priority identity/version/hash/source or
-      duplicate facts until the count is 3–5, never six. The bullets still cover
-      completeness, primary evidence strength, noteworthy targets, actual I/O,
-      and the recommendation reason, with multiple roles allowed in one bullet.
+      Decision Basis & Next Steps; the default count is 3–4 and answers
+      reason, impact, action, and only-useful scope/cost.  Error or explicit
+      technical-detail cards keep the same compact count while exposing only
+      relevant evidence.
+- [ ] External links, embedded files, macros, and unresolved primary counts are
+      translated into business meaning and an in-scope action.  Optional
+      author/title/application gaps stay hidden unless they change a decision
+      or the user asks for that metadata.
 - [ ] Size/memory preflight, `ok`, `partial`, abnormal plan-only, risk, password, and error handling
       follows the explicit top-level and per-target statuses; abnormal plan-only
       is **无法继续**, never `ok` or **可继续处理**.
@@ -720,7 +765,8 @@ do not invent a report link.
 - [ ] Byte counters retain exact integers and binary humanization; missing
       `elapsed_ms` is never rendered as zero.
 - [ ] Attention uses only the concise structural-signal boundary; detailed
-      security limits remain available in Insights or Raw result. A usable
+      security limits remain available in the rationale section when requested
+      or in Raw result. A usable
       wrapper report links the exact current-run `.json` path (including a
       retained nonzero JSON); a `.diagnostic` is labeled non-JSON evidence; no
       stale report is selected, no fenced-JSON fallback is used, no link is

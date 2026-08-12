@@ -41,3 +41,45 @@ qa/scripts/run-corpus.sh --manifest qa/CORPUS_MANIFEST.tsv --public-only
 
 The ignored run tree is the source of full current-run evidence; `QA.csv` is
 updated only after a case has actually been run and reviewed by the main task.
+
+## Round 4 business-card evaluator
+
+`evaluate-business-card.py` is a read-only same-JSON oracle for the v0.3.3
+business-language card. It accepts an evidence root containing `cases.local.json`,
+`before/U01.md` … `before/U12.md` or `after/U01.md` … `after/U12.md`, and the
+manifest's `json` paths. The manifest may contain local private paths, but the
+evaluator prints only stable aliases (`U01` … `U12`) and assertion names; it
+does not copy, publish, or rewrite any user file or report.
+
+The batch checks cover the five exact headings, 3–4 decision bullets, all four
+recommendations, primary count and format unit, `本次未取得`, exact raw-JSON
+link, business impact/action for risk and missing-primary cases, optional
+metadata suppression, structural-signal boundary, and forbidden technical or
+replacement-parser advice. A non-zero result is expected for the historical
+Before corpus (RED); the candidate After corpus must exit zero (GREEN):
+
+```sh
+python qa/scripts/evaluate-business-card.py \
+  --evidence-dir <business-insights-evidence-dir> --phase before
+python qa/scripts/evaluate-business-card.py \
+  --evidence-dir <business-insights-evidence-dir> --phase after
+```
+
+Exception assertions require caller-supplied real Codex evidence and never
+fabricate a response:
+
+```sh
+python qa/scripts/evaluate-business-card.py \
+  --report <error-report.json> --card <error-card.md> --request error
+python qa/scripts/evaluate-business-card.py \
+  --report <technical-report.json> --card <technical-card.md> --request technical
+python qa/scripts/evaluate-business-card.py \
+  --summary-evidence-dir <summary-run-dir>
+```
+
+The error contract requires the exact report error code and exit reason plus
+the raw JSON link. The technical contract requires a raw link and requested
+low-level evidence. The summary/non-trigger contract requires `events.jsonl`,
+unchanged `before.tsv`/`after.tsv` snapshots, and command-event evidence with
+no `probe-document.sh` or `deckprobe` invocation. Missing evidence is a failed
+assertion, not a pass.

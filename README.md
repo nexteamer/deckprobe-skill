@@ -1,17 +1,19 @@
 # DeckProbe Skill
 
-DeckProbe Skill v0.3.2 is a Linux-only, one-file preflight for document products
-and developer-operated agents. It runs the bundled wrapper against one local
-document, preserves the schema-v2 JSON artifact, and turns the result into a
-business-first check card before a downstream document tool is selected.
+DeckProbe Skill v0.3.3 is a
+Linux-only, one-file preflight for document products and developer-operated
+agents. It runs the bundled wrapper against one local document, preserves the
+schema-v2 JSON artifact, and turns the result into a business-first check card
+before a downstream document tool is selected.
 
-The public project is `nexteamer/deckprobe-skill`. Installation examples pin
-the immutable `v0.3.2` release tag after the release gate publishes it, so a
-recipient does not depend on mutable `main` state or a copied local checkout.
+The public project is `nexteamer/deckprobe-skill`. Install the public release
+from the immutable `v0.3.3` tag rather than mutable `main` or a copied local
+checkout.
 
-Release note: v0.3.2 supersedes v0.3.1 (which superseded v0.3.0); it keeps the
-symlink target-size fix and adds a final 3–5-bullet Developer Insights gate after
-fresh installed E2E exposed a six-bullet response.
+Release note: v0.3.3 keeps the v0.3.2 symlink-size, resource,
+recommendation, missing-value, and raw-artifact behavior. It changes the default
+fourth section from low-level Developer Insights to business-language decision
+rationale and next steps.
 
 ## Audience
 
@@ -42,7 +44,7 @@ directory, glob, archive, multiple attachment, batch, or unsupported extension
 does not trigger this Skill. An uploaded attachment is eligible only after it
 has one exact local readable path.
 
-The v0.3.2 input ceiling is 1 GiB (1,073,741,824 bytes, inclusive). The wrapper
+The unchanged runtime input ceiling is 1 GiB (1,073,741,824 bytes, inclusive). The wrapper
 applies a physical-read budget of `max(16 MiB, input size + 1 MiB)` and a
 60-second timeout whenever that budget is above 16 MiB. PDFs larger than 128 MiB
 must pass a Linux `MemAvailable >= 3 × input size` preflight before DeckProbe
@@ -77,10 +79,10 @@ checked.
 ## Install from the published GitHub repository
 
 The command below is the official Codex `skill-installer` remote flow. Run it
-only in an empty destination, after the immutable `v0.3.2` tag is published.
+only in an empty destination, using the immutable `v0.3.3` tag.
 
 ```sh
-python3 "${CODEX_HOME:-$HOME/.codex}/skills/.system/skill-installer/scripts/install-skill-from-github.py" --repo nexteamer/deckprobe-skill --path skills/deckprobe --ref v0.3.2
+python3 "${CODEX_HOME:-$HOME/.codex}/skills/.system/skill-installer/scripts/install-skill-from-github.py" --repo nexteamer/deckprobe-skill --path skills/deckprobe --ref v0.3.3
 ```
 
 The installer retrieves `skills/deckprobe` from the remote repository and
@@ -114,16 +116,22 @@ English headings are:
 1. `Conclusion`
 2. `Document overview`
 3. `Attention`
-4. `Developer Insights`
+4. `Decision Basis & Next Steps`
 5. `Raw result`
 
 For a Chinese request, use exactly `结论`, `文档概览`, `需要注意`,
-`Developer Insights`, and `原始结果`. The first three sections stay
-business-first. Developer Insights always has 3–5 compact bullets with real
-status, evidence, I/O, and recommendation data. The Raw result preserves an
+`判断依据与下一步`, and `原始结果`. The first four sections are
+business-readable. The fourth section has 3–4 compact bullets explaining why
+the recommendation was selected, what it may affect, what to do next, and only
+useful scope or cost information. Internal target IDs, parser paths,
+confidence labels, and detailed I/O stay in Raw result by default; actionable
+error evidence and explicitly requested technical detail remain available. The Raw result preserves an
 unchanged valid JSON artifact, including a retained nonzero current-run report;
 a retained `.diagnostic` is labeled non-JSON failure evidence; it says
 `未生成`/`not generated` when an error or preflight guard produced no artifact.
+In a normal Skill run, the report stays under the caller's workspace
+`output/deckprobe/`; the Skill must not replace that durable location with an
+invented `/tmp` directory.
 
 Recommendations follow this order: `无法继续`, `需要密码`, `建议复核`, then
 `可继续处理`. A `partial` status by itself is not a review trigger; missing

@@ -13,7 +13,7 @@ format defaults and security signals (`@default,@security`) at metadata level.
 The user does not need to name a target, and this Skill must not ask the user
 to choose one or replace the wrapper with a direct CLI invocation.
 
-The v0.3.2 wrapper accepts a file only when its size is at most 1 GiB
+The v0.3.3 wrapper accepts a file only when its size is at most 1 GiB
 (1,073,741,824 bytes). It applies a physical-read budget of
 `max(16 MiB, input size + 1 MiB)`; when that budget is above 16 MiB it gives the
 DeckProbe process a 60-second timeout. A PDF larger than 128 MiB is checked
@@ -96,16 +96,19 @@ and `deckprobe --version`. If either check fails, stop and point the user to
 do not use `sudo`, Docker, or a system-directory write.
 
 The wrapper is the only execution interface. It validates Linux, regular-file
-readability, dependency availability, the v0.3.2 size/resource policy, and
+readability, dependency availability, the v0.3.3 size/resource policy, and
 output. Use [the bundled wrapper](scripts/probe-document.sh) and invoke it
 exactly as:
 
 ```text
-sh <this skill directory>/scripts/probe-document.sh INPUT [OUTPUT_DIR]
+sh <this skill directory>/scripts/probe-document.sh INPUT
 ```
 
-The optional output directory is writable and explicit only when needed. The
-wrapper's default is `output/deckprobe` below the caller's current directory.
+For a normal Skill run, do not pass `OUTPUT_DIR`, create a temporary output
+directory, or use `/tmp`: the wrapper must keep the user-visible report in
+`output/deckprobe` below the caller's current workspace. Pass `OUTPUT_DIR` only
+when the user explicitly supplied a different persistent workspace directory;
+never invent one.
 When DeckProbe emits non-empty output, stdout is exactly one absolute current-run
 artifact path: a `.json` path only when the output is valid JSON, or a
 `.diagnostic` path when the output is invalid. A diagnostic artifact preserves
@@ -121,8 +124,10 @@ evidence.
 1. Confirm that the supplied input is one readable regular file and normalize
    its extension against the trigger list. Reject URLs, stdin, folders, globs,
    and multiple paths before invoking anything.
-2. Invoke only the bundled wrapper once through `sh`. Do not depend on the
-   downloaded file retaining an executable bit, and do not pass a hand-picked
+2. Invoke only the bundled wrapper once through `sh`, without an output-directory
+   argument unless the user explicitly supplied a different persistent workspace
+   directory. Do not use `mktemp` or `/tmp` for a user-visible report. Do not
+   depend on the downloaded file retaining an executable bit, and do not pass a hand-picked
    target list; the wrapper's `@default,@security` selection is the standard
    check. The wrapper performs the size, large-PDF memory, physical-budget, and
    timeout checks before its one DeckProbe call.
@@ -198,20 +203,39 @@ OCR, Render, Parse, prediction, model-cost claims, or a security verdict.
 
 ## Five-section user card
 
-For every `ok`, `partial`, or `error` report, emit exactly these five sections
-in this order and no additional card sections. Match the user's language for
-all prose. Use the canonical English headings or, for a Chinese request, emit
-these exact Chinese-only headings: **结论**, **文档概览**, **需要注意**,
-**Developer Insights**, and **原始结果**. The bilingual slash labels in the
-numbered rules below are documentation labels only; never emit them as literal
-headings in a Chinese card.
+For every `ok`, `partial`, or `error` report, emit exactly these five Markdown
+heading lines in this order and no additional card sections. Match the user's
+language for all prose. For a Chinese request, the heading lines are exactly:
+
+```text
+## 结论
+## 文档概览
+## 需要注意
+## 判断依据与下一步
+## 原始结果
+```
+
+For an English request, use the equivalent business headings `## Conclusion`,
+`## Document Overview`, `## Attention`, `## Decision Basis & Next Steps`, and
+`## Raw Result`. Do not add numbering, prefixes, suffixes, translations, or
+alternative heading text. The bilingual slash labels in the numbered rules
+below are documentation labels only; never emit them as literal headings in a
+Chinese card.
 
 The first three sections are business-first. They must not contain target IDs,
-paths, source fields, confidence values, diagnostics, or measured I/O. Keep
-those low-level details in compact bullets in the fourth section or the
-unchanged artifact. Do not start a conclusion with the literal `partial` or
-`status=partial`; lead with the recommendation and user impact, then explain
-the status in the card.
+paths, source fields, confidence values, diagnostics, or measured I/O. Keep the
+underlying evidence in the unchanged artifact; the fourth section is also
+business-first by default and has a narrowly defined technical-detail exception
+for errors and explicit user requests below. Do not start a conclusion with the
+literal `partial` or `status=partial`; lead with the recommendation and user
+impact, then explain the status in the card.
+
+Across an ordinary `ok` or `partial` card, do not use `metadata`/`元数据`,
+`技术路由`, `技术预检`, or `技术适用性` as user-facing explanations. Say
+`结构检查`, `后续处理建议`, or the direct business effect instead. Apart from
+the format-specific primary count, omit missing secondary structure or metadata
+such as word count unless the user explicitly asks for it or it changes the
+deterministic recommendation.
 
 1. **Conclusion / 结论** — lead with one of the four recommendation states.
    State what the check enables next and that the check is bounded, not a
@@ -226,7 +250,12 @@ the status in the card.
    expose a local path, source kind, target name, confidence, or I/O here. For
    an error, state that the check did not complete and format/count information
    is **本次未取得** (or `not obtained in this probe`); never invent a format or
-   primary count.
+   primary count. Optional author, title, application, and application-version
+   gaps do not change the recommendation and stay out of the default card;
+   mention them only when the user explicitly asks for that metadata.
+   Use format-correct business units in Chinese: PDF/Word use **页**,
+   PowerPoint/Keynote use **张幻灯片**, and Excel/Numbers use **个工作表**;
+   never call a PowerPoint or Keynote slide **一页**.
 3. **Attention / 需要注意** — show only explicit actionable signals and
    critical gaps, in business language. Password, encryption, active-content,
    macros, embedded files, external relationships, corruption, missing assets,
@@ -236,31 +265,44 @@ the status in the card.
    triggers review or changes the recommendation. Do not describe
    absent/unresolved signals as safe or absent, and do not claim a security
    certification. When any security signal is shown, include this concise
-   boundary in the user's language: **这些是结构信号，不是安全认证/恶意软件结论。**
+   boundary in the user's language: **这些是结构信号，不是安全认证或恶意软件结论。**
    In English, use: **These are structural signals, not a security certification
    or malware conclusion.** Detailed unexecuted-capability limitations may stay
-   in Developer Insights or the raw JSON; do not add a long disclaimer here.
+   in Decision Basis & Next Steps or the raw JSON; do not add a long disclaimer
+   here.
    For an error, state that the check did not complete and security information
    is **本次未取得** (or `not obtained in this probe`); do not infer safety.
-4. **Developer Insights** — always write exactly 3–5 compact Markdown bullets.
-   Include real completeness data (top-level status, unresolved targets, and
-   material diagnostics), evidence data (target status/confidence/path/source
-   when present), actual I/O data (probe level, selected paths, estimated cost,
-   physical/expanded bytes, random reads, and elapsed time when present), and
-   the rule/evidence that produced the recommendation. For an error, retain
-   the real wrapper stderr, exit code, and report `error.code`/`error.message`/
-   `error.exit_code` fields when present. For a plan-only/non-execution report,
-   state that no document bytes were interpreted. Use the localized
-   missing-value phrase for every absent or unresolved field; do not infer zero,
-   false, or an empty list.
+4. **Decision Basis & Next Steps / 判断依据与下一步** — by default, write
+   exactly 3–4 compact Markdown bullets in this order:
+   1. why the recommendation was reached;
+   2. what the finding may affect for later upload, sharing, or document
+      processing;
+   3. what the user or downstream system should do next;
+   4. only when useful, whether the check was complete and lightweight, or which
+      meaningful field or cost was not obtained in this probe.
+
+   In ordinary `ok`/`partial` cards, do not expose internal target IDs, top-level
+   status, probe level, driver/profile, resolved/unknown labels, confidence,
+   parser paths, source fields, `execution.paths`, estimated-cost units,
+   random-read counts, or OPC/`.rels`/`TargetMode` terminology. Translate
+   external relationships, embedded files, macros, and unresolved primary
+   counts into the business meaning described by the result-interpretation
+   reference; keep their underlying evidence in the unchanged JSON artifact.
+   For an error, retain only the exact actionable error code, exit reason, and
+   other evidence necessary to troubleshoot the failed run. If the user
+   explicitly asks for technical details, relevant underlying evidence may be
+   shown without changing the recommendation, missing-value, or raw-link rules.
+   For a plan-only/non-execution report, state that **没有文档字节被解释** (or
+   `no document bytes were interpreted`). Use the localized missing-value phrase
+   for every absent or unresolved field; do not infer zero, false, or an empty
+   list.
+
    Immediately before sending any five-section card, count the Markdown bullets
-   directly under `Developer Insights`. If there are more than five, merge
-   low-priority identity, version, hash, source, or duplicate evidence facts
-   into an existing completeness, primary-evidence, noteworthy-targets, or I/O
-   bullet; never emit a sixth bullet. If there are fewer than three, combine or
-   add compact bullets until the count is 3–5 while retaining the required
-   evidence roles. Recount after merging and do not send the card until this
-   gate passes; multiple roles may share one bullet.
+   directly under this section. There must be 3–4; merge duplicate or
+   low-priority facts into an existing business bullet, and never emit a fifth
+   bullet. Recount after merging and do not send the card until this gate passes;
+   the fourth scope/cost bullet is optional when it adds no useful decision
+   context.
 5. **Raw result / 原始结果** — for a `.json` path, provide a clickable Markdown
    link whose target is exactly the absolute artifact path printed by the
    wrapper and keep the JSON unchanged and downloadable, including a nonzero
@@ -294,8 +336,8 @@ zero, an empty string, a guessed count, or a claim of safety.
 
 Describe `high` confidence as strong direct evidence and `exact` as
 deterministic/exact path evidence; these are evidence strengths, not statistical
-accuracy or probabilities. Preserve target status and unresolved-target lists
-in Developer Insights even when the business sections stay concise.
+accuracy or probabilities. Preserve target status and unresolved-target lists in
+the raw JSON even when the business sections stay concise.
 
 ## Stop conditions
 
