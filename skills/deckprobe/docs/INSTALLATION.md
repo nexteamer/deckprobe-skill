@@ -1,4 +1,4 @@
-# DeckProbe Skill v0.3.3: install and first use
+# DeckProbe Skill v0.3.4: install and first use
 
 This package is a Linux-only Codex Skill. It checks one local PDF, Word, Excel,
 PowerPoint, Keynote, Pages, or Numbers file through the official `deckprobe`
@@ -6,14 +6,35 @@ CLI. The Skill is a routing and explanation layer; it does not contain a second
 document parser and it does not install the CLI for you.
 
 The release source is the public GitHub repository `nexteamer/deckprobe-skill`.
-Install the immutable `v0.3.3` ref. Do not install from a local copy, mutable `main`, or an unreviewed
-binary. Public GitHub is the primary route; a Cloudflare mirror is only a
+Install the immutable `v0.3.4` ref. Do not install from a local copy, mutable
+`main`, or an unreviewed binary. Public GitHub is the primary route; a Cloudflare mirror is only a
 fallback when the approved GitHub source is unavailable.
 
 Local attachment paths exposed as symlinks are measured by their target file
 before the size, memory, and physical-budget policy is applied.
 
-## 1. Install the official DeckProbe CLI
+## 1. Prepare a fresh Ubuntu environment
+
+Install only the tools needed for remote setup:
+
+```sh
+apt-get update
+DEBIAN_FRONTEND=noninteractive apt-get install -y ca-certificates curl git
+```
+
+Install the standalone Codex CLI and verify it:
+
+```sh
+curl -fsSL https://chatgpt.com/codex/install.sh | sh
+export PATH="$HOME/.local/bin:$PATH"
+codex --version
+```
+
+Run `codex` once and sign in before the first natural-language Skill journey.
+The Codex installer, authentication, and remote Skill checkout need network
+access. Document checks after setup do not.
+
+## 2. Install the official DeckProbe CLI
 
 The CLI is a separate prerequisite. Use the official user-space installer; it
 does not need `sudo` or a system-directory write:
@@ -47,14 +68,20 @@ If either prerequisite command fails, stop here and fix the official CLI
 installation; the Skill does not search for, download, or substitute another
 executable.
 
-## 2. Install the Skill from public GitHub
+## 3. Install the Skill from public GitHub
 
-Use an empty destination. The official Codex installer retrieves the Skill
-subtree from GitHub; it is not a copy-paste of files from this repository. Run
-it against the immutable `v0.3.3` ref:
+Use an empty destination. The following portable GitHub checkout works with a
+fresh standalone Codex CLI; it does not depend on an internal `.system` Skill
+installer being present:
 
 ```sh
-python3 "${CODEX_HOME:-$HOME/.codex}/skills/.system/skill-installer/scripts/install-skill-from-github.py" --repo nexteamer/deckprobe-skill --path skills/deckprobe --ref v0.3.3
+install_root="${CODEX_HOME:-$HOME/.codex}"
+mkdir -p "$install_root/skills"
+test ! -e "$install_root/skills/deckprobe"
+checkout=$(mktemp -d)
+git clone --quiet --depth 1 --branch v0.3.4 \
+  https://github.com/nexteamer/deckprobe-skill.git "$checkout/repo"
+mv "$checkout/repo/skills/deckprobe" "$install_root/skills/deckprobe"
 ```
 
 Run it only when the destination Skill directory is empty. The network is
@@ -65,11 +92,11 @@ not fetch documents, parsers, or external relationships.
 After installation, confirm that the destination contains `SKILL.md`,
 `agents/openai.yaml`, `references/result-interpretation.md`,
 `scripts/probe-document.sh`, and this guide. Record the immutable remote ref and
-installed file hashes for release evidence. The installer intentionally refuses
+installed file hashes for release evidence. The `test ! -e` guard intentionally refuses
 to overwrite a non-empty destination. Public GitHub is the primary route;
 Cloudflare is only a fallback when the approved GitHub source is unavailable.
 
-## 3. First use
+## 4. First use
 
 Provide exactly one readable local regular file with one of these extensions:
 
@@ -105,9 +132,9 @@ selectors. Valid output is written as a unique raw schema-v2 JSON report below
 non-empty output is preserved separately as a `.diagnostic` failure artifact.
 The Skill returns a five-section check card plus the exact artifact link.
 
-## 4. Resource limits and truthful failures
+## 5. Resource limits and truthful failures
 
-The v0.3.3 wrapper accepts files up to 1 GiB (1,073,741,824 bytes, inclusive).
+The v0.3.4 wrapper accepts files up to 1 GiB (1,073,741,824 bytes, inclusive).
 Its physical-read budget is `max(16 MiB, input size + 1 MiB)`; when the budget is
 above 16 MiB, the DeckProbe process receives a 60-second timeout. A PDF above
 128 MiB is checked before DeckProbe starts and requires Linux
@@ -137,7 +164,7 @@ malware conclusion. This Skill does not summarize, OCR, extract, edit,
 convert, render, decrypt, execute macros, follow external links, accept URLs,
 accept folders, or process batches.
 
-## 5. Update and rollback
+## 6. Update and rollback
 
 Treat every update as a remote immutable-source change:
 
@@ -159,10 +186,10 @@ mv "$install_root/skills/deckprobe" \
   "$install_root/skills/deckprobe.backup-$(date +%Y%m%d%H%M%S)"
 ```
 
-Run the GitHub installer only after the move has succeeded. This backup is the
+Run the GitHub checkout only after the move has succeeded. This backup is the
 rollback path; it is not a second active Skill.
 
-## 6. Uninstall
+## 7. Uninstall
 
 Move the effective Skill directory to a recoverable backup first, then remove
 that backup only after the uninstall is confirmed. Uninstalling the Skill does
