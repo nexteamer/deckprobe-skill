@@ -30,7 +30,7 @@ execution, link fetching, decryption, editing, conversion, or model inference.
 
 ## Runtime guard and current-run artifacts
 
-The v0.3.3 wrapper, not the language model, owns the preflight limits:
+The v0.3.4 wrapper, not the language model, owns the preflight limits:
 
 - The accepted input is one readable local regular file no larger than
   1,073,741,824 bytes (1 GiB, inclusive).

@@ -1,19 +1,19 @@
 # DeckProbe Skill
 
-DeckProbe Skill v0.3.3 is a
-Linux-only, one-file preflight for document products and developer-operated
+DeckProbe Skill v0.3.4 is a Linux-only, one-file preflight for document products and developer-operated
 agents. It runs the bundled wrapper against one local document, preserves the
 schema-v2 JSON artifact, and turns the result into a business-first check card
 before a downstream document tool is selected.
 
 The public project is `nexteamer/deckprobe-skill`. Install the public release
-from the immutable `v0.3.3` tag rather than mutable `main` or a copied local
+from the immutable `v0.3.4` tag rather than mutable `main` or a copied local
 checkout.
 
-Release note: v0.3.3 keeps the v0.3.2 symlink-size, resource,
-recommendation, missing-value, and raw-artifact behavior. It changes the default
-fourth section from low-level Developer Insights to business-language decision
-rationale and next steps.
+Release note: v0.3.4 keeps the v0.3.3 document-check behavior and replaces the
+Codex-internal Skill installer command with a portable GitHub checkout that
+works in a fresh standalone Codex CLI installation. v0.3.3 introduced the
+business-language decision section while preserving recommendation,
+missing-value, and raw-artifact behavior.
 
 ## Audience
 
@@ -78,14 +78,20 @@ checked.
 
 ## Install from the published GitHub repository
 
-The command below is the official Codex `skill-installer` remote flow. Run it
-only in an empty destination, using the immutable `v0.3.3` tag.
+The commands below install directly from the immutable GitHub tag and work with
+the standalone Codex CLI. Run them only when the destination does not exist.
 
 ```sh
-python3 "${CODEX_HOME:-$HOME/.codex}/skills/.system/skill-installer/scripts/install-skill-from-github.py" --repo nexteamer/deckprobe-skill --path skills/deckprobe --ref v0.3.3
+install_root="${CODEX_HOME:-$HOME/.codex}"
+mkdir -p "$install_root/skills"
+test ! -e "$install_root/skills/deckprobe"
+checkout=$(mktemp -d)
+git clone --quiet --depth 1 --branch v0.3.4 \
+  https://github.com/nexteamer/deckprobe-skill.git "$checkout/repo"
+mv "$checkout/repo/skills/deckprobe" "$install_root/skills/deckprobe"
 ```
 
-The installer retrieves `skills/deckprobe` from the remote repository and
+The checkout retrieves `skills/deckprobe` from the remote repository and
 places it under the Codex skills directory. It must not be satisfied by
 copying files from a local source tree. Public GitHub is the primary route;
 Cloudflare is only a fallback when the approved GitHub source is unavailable.
@@ -172,19 +178,19 @@ overview and security information remain not obtained, and its Raw result is
 
 ### The destination already contains the Skill
 
-The official installer intentionally refuses to overwrite an existing Skill.
+The documented `test ! -e` guard intentionally refuses to overwrite an existing Skill.
 Use the accepted update flow below: validate the new immutable source first,
 move the old directory to a recoverable backup, then install and verify hashes
 and a wrapper smoke test.
 
 ## Update
 
-1. Select a new immutable public GitHub commit or tag and update the official
-   installer command only after the remote source has been validated.
+1. Select a new immutable public GitHub commit or tag and update the checkout
+   command only after the remote source has been validated.
 2. Validate the package and README from a clean clone before touching the
    installed directory.
 3. Move the installed Skill to a timestamped recoverable backup, run the
-   installer into the now-empty destination, compare installed hashes to the
+   GitHub checkout into the now-empty destination, compare installed hashes to the
    published source, and run one installed-wrapper smoke test.
 4. Keep the backup path and pre/post hashes in the delivery evidence. If any
    check fails, restore the backup instead of claiming an accepted update.
