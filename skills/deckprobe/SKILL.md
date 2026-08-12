@@ -13,7 +13,7 @@ format defaults and security signals (`@default,@security`) at metadata level.
 The user does not need to name a target, and this Skill must not ask the user
 to choose one or replace the wrapper with a direct CLI invocation.
 
-The v0.3.2 wrapper accepts a file only when its size is at most 1 GiB
+The v0.3.3 wrapper accepts a file only when its size is at most 1 GiB
 (1,073,741,824 bytes). It applies a physical-read budget of
 `max(16 MiB, input size + 1 MiB)`; when that budget is above 16 MiB it gives the
 DeckProbe process a 60-second timeout. A PDF larger than 128 MiB is checked
@@ -96,7 +96,7 @@ and `deckprobe --version`. If either check fails, stop and point the user to
 do not use `sudo`, Docker, or a system-directory write.
 
 The wrapper is the only execution interface. It validates Linux, regular-file
-readability, dependency availability, the v0.3.2 size/resource policy, and
+readability, dependency availability, the v0.3.3 size/resource policy, and
 output. Use [the bundled wrapper](scripts/probe-document.sh) and invoke it
 exactly as:
 

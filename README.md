@@ -1,21 +1,19 @@
 # DeckProbe Skill
 
-This working tree contains the source-only DeckProbe Skill v0.3.3 candidate, a
+DeckProbe Skill v0.3.3 is a
 Linux-only, one-file preflight for document products and developer-operated
 agents. It runs the bundled wrapper against one local document, preserves the
 schema-v2 JSON artifact, and turns the result into a business-first check card
 before a downstream document tool is selected.
 
-The public project is `nexteamer/deckprobe-skill`. The latest published and
-installed release remains immutable `v0.3.2`; installation examples continue
-to pin it until the v0.3.3 candidate receives separate publication approval and
-passes its release gate. A recipient must not install this mutable source branch
-as though it were a published release.
+The public project is `nexteamer/deckprobe-skill`. Install the public release
+from the immutable `v0.3.3` tag rather than mutable `main` or a copied local
+checkout.
 
-Candidate note: v0.3.3 keeps the v0.3.2 runtime, symlink-size, resource,
+Release note: v0.3.3 keeps the v0.3.2 symlink-size, resource,
 recommendation, missing-value, and raw-artifact behavior. It changes the default
 fourth section from low-level Developer Insights to business-language decision
-rationale and next steps. This candidate is not yet installed or published.
+rationale and next steps.
 
 ## Audience
 
@@ -81,10 +79,10 @@ checked.
 ## Install from the published GitHub repository
 
 The command below is the official Codex `skill-installer` remote flow. Run it
-only in an empty destination, after the immutable `v0.3.2` tag is published.
+only in an empty destination, using the immutable `v0.3.3` tag.
 
 ```sh
-python3 "${CODEX_HOME:-$HOME/.codex}/skills/.system/skill-installer/scripts/install-skill-from-github.py" --repo nexteamer/deckprobe-skill --path skills/deckprobe --ref v0.3.2
+python3 "${CODEX_HOME:-$HOME/.codex}/skills/.system/skill-installer/scripts/install-skill-from-github.py" --repo nexteamer/deckprobe-skill --path skills/deckprobe --ref v0.3.3
 ```
 
 The installer retrieves `skills/deckprobe` from the remote repository and
