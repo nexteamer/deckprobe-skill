@@ -170,57 +170,47 @@ For a report with explicit `ok`, `partial`, or `error` status, apply the first
 matching state in this order. The state is a technical routing recommendation,
 never a safety claim.
 
-1. **无法继续** — the wrapper or CLI failed; the input is unsupported,
+1. **Cannot continue** — the wrapper or CLI failed; the input is unsupported,
    unreadable, or invalid; the report itself has `status: "error"`; or the
    report is plan-only/non-execution as defined above.
-2. **需要密码** — the report has a resolved
+2. **Password required** — the report has a resolved
    `security.password_protected` value of `true`.
-3. **建议复核** — any of these is explicit and value-bearing: identity or
+3. **Review recommended** — any of these is explicit and value-bearing: identity or
    extension mismatch; encrypted content with no resolved password requirement;
    a positive macro, embedded-file, external-relationship, active-content,
    corruption, or missing-assets signal; unresolved format identity; or an
    unresolved format-specific primary count.
-4. **可继续处理** — the format is recognized, its required metadata-level
+4. **Continue processing** — the format is recognized, its required metadata-level
    primary count is obtained when that format has one, and no earlier rule
    matches.
 
 Apply the rules to evidence, not to guesses. Missing optional metadata (for
 example author, title, or application version) can leave a report partial while
-still using **可继续处理**. A PDF page count is
+still using **Continue processing**. A PDF page count is
 shown only when the current probe resolves `pdf.page_count`; never use a cached
 or inferred count. Word's `word.page_count` may be unavailable at metadata
-level even when the file is readable: write **本次未取得** (or the English
-missing-value phrase), and never call the document corrupted or infer a number.
-A Pages metadata page count is not a required primary count; write **本次未取得**
+level even when the file is readable: use the localized missing-value phrase,
+and never call the document corrupted or infer a number.
+A Pages metadata page count is not a required primary count; use the localized missing-value phrase
 when unavailable and do not trigger review for that absence alone.
 `pages.cached_page_count` is cached package metadata, not a current rendered page
 count. A digital signature is informational only and does not by itself trigger
-**建议复核**.
+**Review recommended**.
 
-**可继续处理** means technically eligible for the next document tool; it never
+**Continue processing** means technically eligible for the next document tool; it never
 means safe. Do not output or recommend unimplemented downstream capabilities,
 OCR, Render, Parse, prediction, model-cost claims, or a security verdict.
 
 ## Five-section user card
 
-For every `ok`, `partial`, or `error` report, emit exactly these five Markdown
-heading lines in this order and no additional card sections. Match the user's
-language for all prose. For a Chinese request, the heading lines are exactly:
-
-```text
-## 结论
-## 文档概览
-## 需要注意
-## 判断依据与下一步
-## 原始结果
-```
-
-For an English request, use the equivalent business headings `## Conclusion`,
-`## Document Overview`, `## Attention`, `## Decision Basis & Next Steps`, and
-`## Raw Result`. Do not add numbering, prefixes, suffixes, translations, or
-alternative heading text. The bilingual slash labels in the numbered rules
-below are documentation labels only; never emit them as literal headings in a
-Chinese card.
+For every `ok`, `partial`, or `error` report, emit exactly five Markdown
+sections in this semantic order and no additional card sections: Conclusion,
+Document Overview, Attention, Decision Basis & Next Steps, and Raw Result.
+Use the language of the user's request for every heading, recommendation state,
+missing-value phrase, link label, and prose sentence. Translate the five
+semantic headings naturally rather than showing bilingual labels. English uses
+the canonical headings above; for other languages, use clear local equivalents
+without numbering, prefixes, suffixes, or an added English translation.
 
 The first three sections are business-first. They must not contain target IDs,
 paths, source fields, confidence values, diagnostics, or measured I/O. Keep the
@@ -230,33 +220,33 @@ for errors and explicit user requests below. Do not start a conclusion with the
 literal `partial` or `status=partial`; lead with the recommendation and user
 impact, then explain the status in the card.
 
-Across an ordinary `ok` or `partial` card, do not use `metadata`/`元数据`,
-`技术路由`, `技术预检`, or `技术适用性` as user-facing explanations. Say
-`结构检查`, `后续处理建议`, or the direct business effect instead. Apart from
+Across an ordinary `ok` or `partial` card, do not use internal terms such as
+`metadata`, `technical routing`, `technical preflight`, or `technical
+eligibility` as the user-facing explanation. Say `structure check`, `next-step
+recommendation`, or the direct business effect in the user's language. Apart from
 the format-specific primary count, omit missing secondary structure or metadata
 such as word count unless the user explicitly asks for it or it changes the
 deterministic recommendation.
 
-1. **Conclusion / 结论** — lead with one of the four recommendation states.
+1. **Conclusion** — lead with the localized form of one of the four recommendation states.
    State what the check enables next and that the check is bounded, not a
    safety verdict. For a partial report, say that the check completed with
    identified gaps; do not call the whole check a failure. For an error, lead
-   with **无法继续**, say that the check did not complete, and make clear that
+   with **Cannot continue** in the user's language, say that the check did not complete, and make clear that
    this is not a successful document check.
-2. **Document overview / 文档概览** — describe the recognized format and the
+2. **Document overview** — describe the recognized format and the
    obtained primary count (PDF/Word pages, Excel/Numbers sheets,
    PowerPoint/Keynote slides, or another explicit metadata-level count) in
    plain language. Include only values explicitly present in the JSON. Do not
    expose a local path, source kind, target name, confidence, or I/O here. For
    an error, state that the check did not complete and format/count information
-   is **本次未取得** (or `not obtained in this probe`); never invent a format or
+   uses the localized missing-value phrase; never invent a format or
    primary count. Optional author, title, application, and application-version
    gaps do not change the recommendation and stay out of the default card;
    mention them only when the user explicitly asks for that metadata.
-   Use format-correct business units in Chinese: PDF/Word use **页**,
-   PowerPoint/Keynote use **张幻灯片**, and Excel/Numbers use **个工作表**;
-   never call a PowerPoint or Keynote slide **一页**.
-3. **Attention / 需要注意** — show only explicit actionable signals and
+   Use format-correct business units in the selected language; never call a
+   PowerPoint or Keynote slide a page.
+3. **Attention** — show only explicit actionable signals and
    critical gaps, in business language. Password, encryption, active-content,
    macros, embedded files, external relationships, corruption, missing assets,
    and identity/primary-count gaps follow the recommendation precedence.
@@ -265,14 +255,14 @@ deterministic recommendation.
    triggers review or changes the recommendation. Do not describe
    absent/unresolved signals as safe or absent, and do not claim a security
    certification. When any security signal is shown, include this concise
-   boundary in the user's language: **这些是结构信号，不是安全认证或恶意软件结论。**
-   In English, use: **These are structural signals, not a security certification
-   or malware conclusion.** Detailed unexecuted-capability limitations may stay
+   boundary translated naturally into the user's language: **These are
+   structural signals, not a security certification or malware conclusion.**
+   Detailed unexecuted-capability limitations may stay
    in Decision Basis & Next Steps or the raw JSON; do not add a long disclaimer
    here.
    For an error, state that the check did not complete and security information
-   is **本次未取得** (or `not obtained in this probe`); do not infer safety.
-4. **Decision Basis & Next Steps / 判断依据与下一步** — by default, write
+   uses the localized missing-value phrase; do not infer safety.
+4. **Decision Basis & Next Steps** — by default, write
    exactly 3–4 compact Markdown bullets in this order:
    1. why the recommendation was reached;
    2. what the finding may affect for later upload, sharing, or document
@@ -292,8 +282,8 @@ deterministic recommendation.
    other evidence necessary to troubleshoot the failed run. If the user
    explicitly asks for technical details, relevant underlying evidence may be
    shown without changing the recommendation, missing-value, or raw-link rules.
-   For a plan-only/non-execution report, state that **没有文档字节被解释** (or
-   `no document bytes were interpreted`). Use the localized missing-value phrase
+   For a plan-only/non-execution report, state in the user's language that
+   **no document bytes were interpreted**. Use the localized missing-value phrase
    for every absent or unresolved field; do not infer zero, false, or an empty
    list.
 
@@ -303,19 +293,19 @@ deterministic recommendation.
    bullet. Recount after merging and do not send the card until this gate passes;
    the fourth scope/cost bullet is optional when it adds no useful decision
    context.
-5. **Raw result / 原始结果** — for a `.json` path, provide a clickable Markdown
+5. **Raw result** — for a `.json` path, provide a clickable Markdown
    link whose target is exactly the absolute artifact path printed by the
    wrapper and keep the JSON unchanged and downloadable, including a nonzero
-   run's retained valid JSON. For a `.diagnostic` path, label the link **当前
-   运行诊断输出（非 JSON）** (or `current-run diagnostic output (not JSON)`) and
+   run's retained valid JSON. For a `.diagnostic` path, use the localized label
+   for **current-run diagnostic output (not JSON)** and
    do not present it as a raw report. If an error has no artifact, write exactly
-   **未生成** (or `not generated` in English) and provide no link. This
+   the localized equivalent of **not generated** and provide no link. This
    artifact-absence marker is not a missing report field; report values use the
    localized missing-value phrase below. Never search for a prior file, invent a
    placeholder, use a repository-relative substitute, create a false link, or
    reconstruct a compact report.
 
-For an execution/input/dependency/resource error, use the **无法继续** state
+For an execution/input/dependency/resource error, use the localized **Cannot continue** state
 and the explicit stderr/exit or report error fields while making clear that the
 five-section error card is not a successful check. Its overview and Attention
 must use the missing-value phrase where evidence was not obtained; never
@@ -325,10 +315,11 @@ successful check.
 
 ## Missing values and evidence language
 
-Use one fixed localized phrase for every absent, null, unresolved, unsupported,
-failed, planned, or budget-limited report value. In Chinese prose it is exactly
-**本次未取得**. In English prose it is exactly **not obtained in this probe**.
-The artifact-absence marker **未生成** (or `not generated`) applies only when
+Use one consistent localized equivalent of **not obtained in this probe** for
+every absent, null, unresolved, unsupported, failed, planned, or budget-limited
+report value. Keep the phrase consistent within the card and natural in the
+user's language. The artifact-absence marker **not generated**, also localized,
+applies only when
 the wrapper produced no artifact; it is not a substitute for a missing report
 value.
 Keep raw JSON nulls/statuses unchanged. Never turn a missing value into `false`,
@@ -341,10 +332,10 @@ the raw JSON even when the business sections stay concise.
 
 ## Stop conditions
 
-Stop after returning the five-section card for `ok`, `partial`, or `error`.
+Stop after returning the localized five-section card for `ok`, `partial`, or `error`.
 Include the exact raw JSON link only for a valid `.json` artifact; label a
 `.diagnostic` link as non-JSON failure evidence; for an error without an
-artifact, write **未生成** (or `not generated`) instead. For a dependency,
+artifact, use the localized **not generated** marker instead. For a dependency,
 platform, input, wrapper, parse, or execution error, return the exact blocker
 and the next user-authorized action needed. Do not retry with another parser,
 install or fetch a binary, upload the file, or perform a non-trigger operation.

@@ -1,217 +1,141 @@
 # DeckProbe Skill
 
-DeckProbe Skill v0.3.4 is a Linux-only, one-file preflight for document products and developer-operated
-agents. It runs the bundled wrapper against one local document, preserves the
-schema-v2 JSON artifact, and turns the result into a business-first check card
-before a downstream document tool is selected.
+Give Codex a fast, structured preflight for local documents.
 
-The public project is `nexteamer/deckprobe-skill`. Install the public release
-from the immutable `v0.3.4` tag rather than mutable `main` or a copied local
-checkout.
+DeckProbe Skill checks one PDF, Microsoft Office, or Apple iWork file before a
+downstream document workflow begins. It uses the official
+[DeckProbe](https://github.com/deckflow/deckprobe) CLI, preserves the raw JSON
+report, and explains the useful findings in the same language as the user's
+request.
 
-Release note: v0.3.4 keeps the v0.3.3 document-check behavior and replaces the
-Codex-internal Skill installer command with a portable GitHub checkout that
-works in a fresh standalone Codex CLI installation. v0.3.3 introduced the
-business-language decision section while preserving recommendation,
-missing-value, and raw-artifact behavior.
+## What it helps with
 
-## Audience
+- Confirm the actual file type and whether the extension matches.
+- Read the main document structure, such as pages, slides, or worksheets when
+  the format exposes it.
+- Surface encryption, password requirements, macros, embedded files, external
+  relationships, and other structural signals.
+- Explain whether the file can continue to the next document tool, needs a
+  password, needs review, or could not be checked.
+- Keep the original schema-v2 JSON report for developers and automated
+  workflows.
 
-Use this Skill when you are a developer or an agent with a local Linux path and
-an installed official DeckProbe CLI. It is intended for an early technical
-check before parsing, rendering, conversion, or another document workflow; it
-is not a consumer document viewer.
+DeckProbe Skill is a preflight tool, not a document reader. It does not
+summarize content, run OCR, edit, convert, render, decrypt, execute macros, or
+certify that a file is safe.
 
-## Purpose and supported extensions
+## Supported files
 
-The Skill accepts exactly one readable local regular file with a
-case-insensitive extension from this list:
+| Family | Extensions |
+| --- | --- |
+| PDF | `.pdf` |
+| Word | `.doc`, `.docx` |
+| Excel | `.xls`, `.xlsx` |
+| PowerPoint | `.ppt`, `.pptx` |
+| Apple iWork | `.key`, `.pages`, `.numbers` |
 
-- PDF: `.pdf`
-- Word: `.doc`, `.docx`
-- Excel: `.xls`, `.xlsx`
-- PowerPoint: `.ppt`, `.pptx`
-- Apple iWork: `.key`, `.pages`, `.numbers`
+The Skill accepts exactly one readable local file per request. URLs, folders,
+globs, and batches are outside the current scope.
 
-The standard wrapper automatically selects the metadata defaults and security
-signals. A user does not need to select a target. The wrapper is the only
-execution interface exposed by the Skill.
+## Install on Linux
 
-## Boundaries
+DeckProbe Skill uses the official DeckProbe CLI as its document engine. An AI
+installer should follow this order:
 
-The request must name one local path. A URL, cloud link, remote object,
-directory, glob, archive, multiple attachment, batch, or unsupported extension
-does not trigger this Skill. An uploaded attachment is eligible only after it
-has one exact local readable path.
+1. Install and verify the official DeckProbe CLI from
+   [`deckflow/deckprobe`](https://github.com/deckflow/deckprobe).
+2. Install the latest published release of this Skill.
+3. Start a fresh Codex session and verify that `$deckprobe` is available.
 
-The unchanged runtime input ceiling is 1 GiB (1,073,741,824 bytes, inclusive). The wrapper
-applies a physical-read budget of `max(16 MiB, input size + 1 MiB)` and a
-60-second timeout whenever that budget is above 16 MiB. PDFs larger than 128 MiB
-must pass a Linux `MemAvailable >= 3 × input size` preflight before DeckProbe
-starts. Expanded-byte and archive-entry defaults are not raised, and the Skill
-does not retry with another parser or an older report.
+If Codex CLI is already installed, the entire setup can start with one prompt:
 
-DeckProbe Skill does not summarize or translate document contents, run OCR or
-text extraction, edit or annotate, convert or export, render or preview, fetch
-external relationships, decrypt content, execute macros or active content, or
-make a security certification. A `可继续处理` recommendation means only that
-the file is technically eligible for the next document tool; it does not mean
-safe.
+```text
+Install the latest DeckProbe Skill from https://github.com/nexteamer/deckprobe-skill, install any missing prerequisites, and verify the installation.
+```
 
-## Official CLI prerequisite
+For a manual or version-pinned installation, see the
+[installation guide](skills/deckprobe/docs/INSTALLATION.md).
 
-Install the official DeckProbe CLI using the package's
-[`docs/INSTALLATION.md`](skills/deckprobe/docs/INSTALLATION.md) or the official DeckProbe
-release instructions. Do not substitute a locally built binary, hide another
-binary earlier on `PATH`, or install a second copy for this Skill.
+## Use it
 
-Before first use, run these checks in the same Linux environment:
+Start a fresh Codex session after installation, then provide one local file:
+
+```text
+$deckprobe inspect /absolute/path/to/document.pdf
+```
+
+Natural-language requests work too:
+
+```text
+Check this presentation before I send it to the next document tool:
+/absolute/path/to/presentation.pptx
+```
+
+The response uses the language of the request. It includes:
+
+1. a clear conclusion;
+2. a document overview;
+3. attention signals and important gaps;
+4. the decision basis and practical next step;
+5. a link to the unchanged raw JSON report.
+
+The wording is localized for the user; the underlying JSON schema, target
+names, statuses, and evidence remain unchanged for developers and automation.
+
+## How to interpret the result
+
+The Skill uses four decision states, localized into the user's language:
+
+| State | Meaning |
+| --- | --- |
+| Cannot continue | The file or runtime could not produce a usable check. |
+| Password required | Protected content explicitly requires a password. |
+| Review recommended | A meaningful structural signal or critical information gap needs attention. |
+| Continue processing | The file is technically eligible for the next document tool. This is not a safety certification. |
+
+A partial report is not automatically a failure. Missing secondary information
+such as author or title may still allow the file to continue. Missing critical
+structure, such as a required page, slide, or worksheet count, is called out
+without guessing.
+
+## Runtime boundaries
+
+- Linux only for this release.
+- Maximum input size: 1 GiB.
+- Files larger than the normal lightweight path receive bounded time, memory,
+  and physical-read checks.
+- Runtime probing is local and does not require Office, LibreOffice, Python,
+  Node.js, OCR, or network access after installation.
+- Structural security signals are evidence for routing and review, not malware
+  detection or a security guarantee.
+
+## Troubleshooting
+
+Check the CLI in the same environment where Codex runs:
 
 ```sh
 command -v deckprobe
 deckprobe --version
 ```
 
-If either command fails, stop and fix the official CLI installation first. The
-Skill does not fall back to another parser or pretend that a document was
-checked.
+If the Skill is not visible after installation, start a new Codex session.
+If the input is rejected, confirm that it is one readable local file with a
+supported extension.
 
-## Install from the published GitHub repository
+Detailed failure handling, update, rollback, and reproducible installation
+instructions are available in the
+[installation guide](skills/deckprobe/docs/INSTALLATION.md).
 
-The commands below install directly from the immutable GitHub tag and work with
-the standalone Codex CLI. Run them only when the destination does not exist.
+## Project status
 
-```sh
-install_root="${CODEX_HOME:-$HOME/.codex}"
-mkdir -p "$install_root/skills"
-test ! -e "$install_root/skills/deckprobe"
-checkout=$(mktemp -d)
-git clone --quiet --depth 1 --branch v0.3.4 \
-  https://github.com/nexteamer/deckprobe-skill.git "$checkout/repo"
-mv "$checkout/repo/skills/deckprobe" "$install_root/skills/deckprobe"
-```
+This repository packages DeckProbe as a Codex Skill. The document-probing
+engine is maintained separately in
+[`deckflow/deckprobe`](https://github.com/deckflow/deckprobe).
 
-The checkout retrieves `skills/deckprobe` from the remote repository and
-places it under the Codex skills directory. It must not be satisfied by
-copying files from a local source tree. Public GitHub is the primary route;
-Cloudflare is only a fallback when the approved GitHub source is unavailable.
-Record the clone URL, immutable ref, installer output, and installed hashes for
-release evidence.
+Contributions and issue reports are welcome. When reporting a problem, include
+the operating system, DeckProbe CLI version, file format, Skill version, and
+the relevant error or redacted JSON report.
 
-## First use
+## License
 
-1. Confirm the official CLI prerequisite with `command -v deckprobe` and
-   `deckprobe --version`.
-2. Ask Codex to use the Skill on exactly one local file, for example:
-   `Use $deckprobe on /path/to/document.pdf.`
-3. Let the Skill validate the path and call its bundled
-   `skills/deckprobe/scripts/probe-document.sh` wrapper once through `sh`. Do
-   not pass a hand-picked target list or bypass the wrapper.
-4. Keep the exact current-run artifact link returned with the check card. Valid
-   JSON uses a `.json` link; invalid non-empty output uses a `.diagnostic` link
-   labeled non-JSON failure evidence. A nonzero CLI exit remains authoritative,
-   and invalid output after a zero CLI exit is still wrapper failure. If a guard
-   or empty-output error produced no artifact, use the real stderr/exit evidence
-   and write `未生成`; never search for an older report or invent a link.
-
-## Output contract
-
-Every `ok`, `partial`, or `error` response has exactly five ordered sections.
-English headings are:
-
-1. `Conclusion`
-2. `Document overview`
-3. `Attention`
-4. `Decision Basis & Next Steps`
-5. `Raw result`
-
-For a Chinese request, use exactly `结论`, `文档概览`, `需要注意`,
-`判断依据与下一步`, and `原始结果`. The first four sections are
-business-readable. The fourth section has 3–4 compact bullets explaining why
-the recommendation was selected, what it may affect, what to do next, and only
-useful scope or cost information. Internal target IDs, parser paths,
-confidence labels, and detailed I/O stay in Raw result by default; actionable
-error evidence and explicitly requested technical detail remain available. The Raw result preserves an
-unchanged valid JSON artifact, including a retained nonzero current-run report;
-a retained `.diagnostic` is labeled non-JSON failure evidence; it says
-`未生成`/`not generated` when an error or preflight guard produced no artifact.
-In a normal Skill run, the report stays under the caller's workspace
-`output/deckprobe/`; the Skill must not replace that durable location with an
-invented `/tmp` directory.
-
-Recommendations follow this order: `无法继续`, `需要密码`, `建议复核`, then
-`可继续处理`. A `partial` status by itself is not a review trigger; missing
-secondary metadata can continue, Word or Pages page counts may be
-`本次未取得`, and a resolved digital signature is informational only. PDF page
-counts must come from the current probe; no page count is inferred. Security
-signals are structural evidence, not a security certification or malware
-conclusion.
-
-## Troubleshooting
-
-### DeckProbe is not on PATH
-
-Run `command -v deckprobe` and `deckprobe --version`. Follow
-[`docs/INSTALLATION.md`](skills/deckprobe/docs/INSTALLATION.md) or the official release
-instructions. Do not modify the Skill to search for or download another binary.
-
-### The input is too large or the host lacks memory
-
-The wrapper accepts at most 1 GiB. For a PDF above 128 MiB, it checks
-`MemAvailable` before calling DeckProbe. A refusal is **无法继续** with the
-actual resource reason; do not raise the limits, retry with another parser, or
-call a previous report a success.
-
-### The input is rejected
-
-Confirm that the path is one readable regular file and that its extension is in
-the supported list. Do not pass a directory, URL, glob, multiple files, or an
-unsupported extension.
-
-### The wrapper exits non-zero or prints no artifact
-
-Keep the wrapper's stderr and exit code. A failed run is `无法继续`; it is not a
-successful document check. A printed `.diagnostic` path preserves non-JSON
-current-run bytes only and must not be parsed as a report. An error card's
-overview and security information remain not obtained, and its Raw result is
-`未生成`/`not generated` when no artifact exists.
-
-### The destination already contains the Skill
-
-The documented `test ! -e` guard intentionally refuses to overwrite an existing Skill.
-Use the accepted update flow below: validate the new immutable source first,
-move the old directory to a recoverable backup, then install and verify hashes
-and a wrapper smoke test.
-
-## Update
-
-1. Select a new immutable public GitHub commit or tag and update the checkout
-   command only after the remote source has been validated.
-2. Validate the package and README from a clean clone before touching the
-   installed directory.
-3. Move the installed Skill to a timestamped recoverable backup, run the
-   GitHub checkout into the now-empty destination, compare installed hashes to the
-   published source, and run one installed-wrapper smoke test.
-4. Keep the backup path and pre/post hashes in the delivery evidence. If any
-   check fails, restore the backup instead of claiming an accepted update.
-
-## Uninstall
-
-Prefer a recoverable move rather than an irreversible delete. Adjust
-`install_root` if Codex uses a non-default `CODEX_HOME`:
-
-```sh
-install_root="${CODEX_HOME:-$HOME/.codex}"
-mv "$install_root/skills/deckprobe" "$install_root/skills/deckprobe.backup-$(date +%Y%m%d%H%M%S)"
-```
-
-Confirm the backup is no longer needed before removing it. Uninstalling the
-Skill does not uninstall the official DeckProbe CLI.
-
-## Release checklist
-
-Before publication, the root/main delivery task must prove a clean public
-GitHub clone, immutable commit and hashes, empty-destination remote install,
-official CLI prerequisite, main-thread Skill E2E, accepted replacement with a
-recoverable backup, and current Docker/runtime evidence. Unrun work is
-`UNVERIFIED` and must not be reported as `PASS`.
+[MIT](LICENSE)

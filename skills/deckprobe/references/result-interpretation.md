@@ -64,8 +64,8 @@ persistent workspace location.
 
 ## Five-section card
 
-Every successful, partial, or error user response is exactly these five ordered
-sections:
+Every successful, partial, or error user response uses exactly these five
+semantic sections in order:
 
 1. **Conclusion**
 2. **Document overview**
@@ -73,8 +73,9 @@ sections:
 4. **Decision Basis & Next Steps**
 5. **Raw result**
 
-For a Chinese card, the exact headings are **结论**, **文档概览**, **需要注意**,
-**判断依据与下一步**, and **原始结果**.  The fourth section is a compact,
+Translate these headings naturally into the language of the user's request.
+Do not show bilingual headings or append the English heading to a localized
+heading. The fourth section is a compact,
 business-facing explanation by default; it is not a dump of probe internals.
 An error response keeps the same five headings but is explicitly not a
 successful document card: its overview and attention contain no fabricated
@@ -96,31 +97,23 @@ diagnose it. Never invent a value that is absent from `results`, `values`,
 `execution`, or the explicit error envelope.
 
 In an ordinary `ok` or `partial` card, do not label the result as `metadata` /
-`元数据`, `技术路由`, `技术预检`, or `技术适用性`. Use `结构检查`, `后续处理建议`,
-or the direct business impact. Missing secondary structure such as word count
+`metadata`, `technical routing`, `technical preflight`, or `technical
+eligibility`. Use `structure check`, `next-step recommendation`, or the direct
+business impact in the user's language. Missing secondary structure such as word count
 stays out of the default card unless the user requested it or it changes the
 deterministic recommendation.
 
 ### Language-localized missing values
 
-Choose the card language from the user's request.  The missing-value sentinel is
+Choose the card language from the user's request. The missing-value sentinel is
 presentation text only; it never changes schema fields, target IDs, statuses,
-diagnostics, or raw JSON:
-
-| Card language | Exact missing-value phrase |
-| --- | --- |
-| English | **not obtained in this probe** |
-| Chinese (中文) | **本次未取得** |
-
-Use **not obtained in this probe** for every absent, unresolved, `null`,
-unsupported, failed, budget-limited, or plan-only value in an English card.  Use
-**本次未取得** in all of those positions in a Chinese card, including a
-missing password result, missing cost counter, or failed format field.  Keep the
-surrounding sentence natural, but do not substitute a synonym for the exact
-sentinel.  The artifact-availability phrases **not generated** (English) and
-**未生成** (Chinese) are the only exception: they describe that a wrapper
+diagnostics, or raw JSON. Use one clear, consistent translation of **not
+obtained in this probe** for every absent, unresolved, `null`, unsupported,
+failed, budget-limited, or plan-only value. Keep the surrounding sentence
+natural in the selected language. The separately localized artifact phrase
+**not generated** is the only exception: it describes that a wrapper
 artifact does not exist, not that a report field is missing, so they do not
-replace **not obtained in this probe** or **本次未取得** for any report value.
+replace the localized missing-value phrase for any report value.
 A machine-readable raw report remains unchanged.
 
 ### Conclusion
@@ -222,9 +215,9 @@ Apply this attention precedence to value-bearing results (`resolved` or
 | 1 | `security.encrypted: true` | “Encrypted content was detected; readability may be limited.” |
 | 2 | `security.password_protected: true` | “A non-empty password is required to read protected content.” |
 | 3 | PDF `security.active_content_risk` = `high`, `medium`, or `low` | Use the rule-based wording below. |
-| 4 | `security.has_macros: true` | “文档包含可执行的 Office 宏，但本次没有执行。” In English: “The document contains executable Office macros; they were not executed in this probe.” |
-| 5 | `security.has_embedded_files: true` | “文档内部附带了其他文件或对象。” In English: “The document contains additional files or objects.” |
-| 6 | `security.has_external_relationships: true` | “文档中包含指向文件外部的链接或资源引用。” In English: “The document contains links or resource references outside the file.” DeckProbe did not visit them; advise confirming their destination and necessity. |
+| 4 | `security.has_macros: true` | “The document contains executable Office macros; they were not executed in this probe.” Translate naturally. |
+| 5 | `security.has_embedded_files: true` | “The document contains additional files or objects.” Translate naturally. |
+| 6 | `security.has_external_relationships: true` | “The document contains links or resource references outside the file.” Translate naturally. DeckProbe did not visit them; advise confirming their destination and necessity. |
 | 7 | `security.has_digital_signature: true` or `security.signature_count > 0` | “Digital-signature structures are present; cryptographic validity was not checked.” This is a neutral informational signal and never by itself a review trigger. |
 | 8 | `quality.corrupted: true` or `quality.missing_assets: true` | State the exact quality signal in plain language. |
 
@@ -256,9 +249,8 @@ Attention section:
 
 > These are structural signals, not a security certification or malware conclusion.
 
-For a Chinese card, use this exact boundary:
-
-> 这些是结构信号，不是安全认证或恶意软件结论。
+Translate this boundary naturally into the user's language; do not append a
+second-language version.
 
 Detailed limits (for example, that DeckProbe does not execute macros or PDF
 active content, follow external relationships, decrypt protected content, or
@@ -293,17 +285,19 @@ result.
 
 Translate the signals that can change a decision as follows:
 
-- An external relationship means **文档中包含指向文件外部的链接或资源引用**
-  (English: “The document contains links or resource references outside the
-  file”).  The probe did not visit those targets; advise confirming their
+- An external relationship means “The document contains links or resource
+  references outside the file,” translated naturally. The probe did not visit
+  those targets; advise confirming their
   destination and necessity.
-- An embedded file means **文档内部附带了其他文件或对象** (English: “The
-  document contains additional files or objects”); advise confirming source
+- An embedded file means “The document contains additional files or objects,”
+  translated naturally; advise confirming source
   and purpose.
-- A macro means **文档包含可执行的 Office 宏，但本次没有执行** (English:
-  “The document contains executable Office macros; they were not executed in
-  this probe”); advise review before opening or forwarding.
-- An unresolved format-specific primary count means **文件可以识别，但关键页数、幻灯片数或工作表数本次未取得** (English: “The file is recognized, but the key page, slide, or worksheet count was not obtained in this probe”).  If the
+- A macro means “The document contains executable Office macros; they were not
+  executed in this probe,” translated naturally; advise review before opening
+  or forwarding.
+- An unresolved format-specific primary count means “The file is recognized,
+  but the key page, slide, or worksheet count was not obtained in this probe,”
+  translated naturally. If the
   count matters, recommend confirmation through the user's existing document
   workflow or manual review.  Do not call the file corrupt.
 - A secondary metadata gap is omitted unless it changes a user decision.  Never
@@ -502,20 +496,20 @@ Common identity/office keys may also be present:
 
 Apply the first matching state, exactly in this order:
 
-1. **无法继续 (cannot continue):** wrapper or CLI failure, a size or large-PDF
+1. **Cannot continue:** wrapper or CLI failure, a size or large-PDF
    memory preflight refusal, unsupported or unreadable input, an
    absent/null/malformed/unknown top-level status, a report-level error, or an
    abnormal plan-only report (empty paths or all results `planned`). A retained
    nonzero JSON remains failure evidence and does not lower this state.
-2. **需要密码 (password required):** resolved
+2. **Password required:** resolved
    `security.password_protected=true`.
-3. **建议复核 (review recommended):** any of the following: identity or
+3. **Review recommended:** any of the following: identity or
    extension mismatch; `security.encrypted=true` with no resolved password
    requirement; positive macro, embedded-file, external-relationship,
    `security.active_content_risk=high|medium|low`, corruption, or
    missing-assets signal; unresolved format identity; or an unresolved
    format-specific primary count.
-4. **可继续处理 (continue processing):** recognized format, its primary count
+4. **Continue processing:** recognized format, its primary count
    obtained where that format has one at metadata level, and no earlier rule
    matched.  Pages has no required current page-count target, so recognized
    Pages metadata can continue when no earlier rule matches.
@@ -529,8 +523,10 @@ automatically recommend review.  `security.encrypted=true` and
 `security.password_protected` are independent: encryption alone is not proof of
 a password, while a resolved password requirement wins the second rule.
 
-No recommendation may name OCR, Render, Parse, model inference, model cost, or
-another unimplemented capability.  **可继续处理** means technical eligibility
+Localize the four display labels into the user's language while preserving
+this exact precedence. No recommendation may name OCR, Render, Parse, model
+inference, model cost, or another unimplemented capability. **Continue
+processing** means technical eligibility
 for the next document tool, never that the document is safe.
 
 ## Failure wording
@@ -539,30 +535,22 @@ Keep the machine-readable `error.code` and target status alongside the plain
 sentence.  Do not relabel `MALFORMED_INPUT`, `BUDGET_EXCEEDED`, or
 `UNSUPPORTED_FORMAT` as a successful inspection.
 
-English templates:
+Canonical templates below are written in English. Translate their prose and
+display labels naturally into the user's language while keeping machine codes,
+target IDs, statuses, and exit values unchanged:
 
-- `status: "error"`: `Probe failed: {error.code} — {error.message} (exit {error.exit_code}). No document-check card conclusions are available.` Recommend **无法继续** in the Conclusion section. If a valid current-run JSON artifact was retained, link it as failure evidence and keep the original exit code. If the wrapper printed `.diagnostic`, link it only as non-JSON failure evidence.
+- `status: "error"`: `Probe failed: {error.code} — {error.message} (exit {error.exit_code}). No document-check card conclusions are available.` Recommend **Cannot continue** in the Conclusion section. If a valid current-run JSON artifact was retained, link it as failure evidence and keep the original exit code. If the wrapper printed `.diagnostic`, link it only as non-JSON failure evidence.
 - `status: "partial"`: `Probe completed with gaps: {business gap} is not obtained in this probe.`
 - Target `budget_exceeded`: `The probe stopped at its configured budget; {target} is not obtained in this probe.`
 - Target `unsupported`: `This target is not supported at the requested format/level; {target} is not obtained in this probe.`
 - Target `unknown` or `failed`: `The selected path did not establish {target}; it is not obtained in this probe.`
 - Target `planned`: `This was a plan-only result; {target} is not obtained in this probe.`
 
-Chinese templates keep the same status, code, and target IDs while using
-**本次未取得** exactly:
-
-- `status: "error"`：`探测失败：{error.code} — {error.message}（退出码 {error.exit_code}）。没有可用的文档检查卡片结论。` Conclusion recommendation: **无法继续**。
-- `status: "partial"`：`探测完成，但存在缺口：{business gap} 本次未取得。`
-- Target `budget_exceeded`：`探测达到配置的预算上限；{target} 本次未取得。`
-- Target `unsupported`：`所选格式/级别不支持此目标；{target} 本次未取得。`
-- Target `unknown` or `failed`：`所选路径未能建立 {target}；{target} 本次未取得。`
-- Target `planned`：`这是仅规划结果；{target} 本次未取得。`
-
 Even failure, risk, password, and partial examples below retain exactly the
-five card sections; a missing artifact is described in Raw result rather than
-replaced with a fabricated link. A retained valid nonzero JSON is linked as
-failure evidence; a `.diagnostic` artifact is labeled non-JSON evidence; either
-card remains **无法继续**.
+five localized card sections; a missing artifact is described in Raw result
+rather than replaced with a fabricated link. A retained valid nonzero JSON is
+linked as failure evidence; a `.diagnostic` artifact is labeled non-JSON
+evidence; either card remains **Cannot continue** in the user's language.
 
 ## Examples
 
@@ -575,7 +563,7 @@ JSON fallback.
 
 ```text
 ## Conclusion
-Recommendation: 可继续处理 (continue processing).
+Recommendation: Continue processing.
 The recognized presentation has 12 slides, so it can move to the next document
 processing step.  This is technical eligibility, not a safety verdict.
 
@@ -604,7 +592,7 @@ step:
 
 ```text
 ## Conclusion
-Recommendation: 可继续处理 (continue processing).
+Recommendation: Continue processing.
 The recognized Word document has 8 pages and can continue to the next document
 processing step.  This is technical eligibility, not a safety verdict.
 
@@ -626,7 +614,7 @@ conclusion.
 <exact artifact link to the unchanged schema-v2 JSON printed by the wrapper>
 ```
 
-### Example: `partial` (Chinese rendering)
+### Example: `partial` (one localized rendering)
 
 ```text
 ## 结论
@@ -652,7 +640,7 @@ quarterly-report.docx — Word 文档，8 页，42 个段落，3 个表格。
 
 ```text
 ## Conclusion
-Recommendation: 建议复核 (review recommended).
+Recommendation: Review recommended.
 The PowerPoint contains 5 slides and an executable Office macro.  Review it
 before opening, forwarding, or continuing document processing.
 
@@ -679,7 +667,7 @@ security certification or malware conclusion.
 
 ```text
 ## Conclusion
-Recommendation: 需要密码 (password required).
+Recommendation: Password required.
 A non-empty password is required to read the protected PDF; provide it through
 the existing authorized workflow before continuing.
 
@@ -705,7 +693,7 @@ a security certification or malware conclusion.
 
 ```text
 ## Conclusion
-Recommendation: 无法继续 (cannot continue).
+Recommendation: Cannot continue.
 The wrapper/CLI failed before a usable document check, so no format, structure,
 or safety conclusion is available.
 
@@ -730,10 +718,10 @@ do not invent a report link.
 
 ## Self-check before handoff
 
-- [ ] The card has exactly five sections in order: Conclusion, Document
-      overview, Attention, Decision Basis & Next Steps, Raw result;
-      Chinese cards use exactly 结论, 文档概览, 需要注意, 判断依据与下一步,
-      原始结果.  Headings are unnumbered and exact.
+- [ ] The card has exactly five localized sections in semantic order:
+      Conclusion, Document overview, Attention, Decision Basis & Next Steps,
+      Raw result. Headings are unnumbered, use the user's language, and do not
+      append a second-language label.
 - [ ] The first three sections and the default rationale bullets are
       business-first and do not dump target IDs, status labels, paths, source
       fields, confidence, parser details, or I/O counters.
@@ -749,8 +737,9 @@ do not invent a report link.
 - [ ] Size/memory preflight, `ok`, `partial`, abnormal plan-only, risk, password, and error handling
       follows the explicit top-level and per-target statuses; abnormal plan-only
       is **无法继续**, never `ok` or **可继续处理**.
-- [ ] Recommendation precedence is exact: 无法继续, 需要密码, 建议复核,
-      可继续处理; partial secondary metadata can continue.
+- [ ] Recommendation precedence is exact: Cannot continue, Password required,
+      Review recommended, Continue processing; display labels are localized and
+      partial secondary metadata can continue.
 - [ ] PDF, Word, Excel, PowerPoint, Keynote, Numbers, and Pages primary fields
       and all existing structure keys are mapped; Pages `cached_page_count` is
       never presented as the current page count.
@@ -760,8 +749,8 @@ do not invent a report link.
 - [ ] Explicit false signals are merged, absent/unresolved/null values use the
       exact localized sentinel, and confidence is described as evidence strength,
       never statistical accuracy.
-- [ ] Chinese cards use **本次未取得** in every missing-value position;
-      English cards use **not obtained in this probe**.
+- [ ] Every card uses one consistent, natural localization of **not obtained
+      in this probe** in every missing-value position.
 - [ ] Byte counters retain exact integers and binary humanization; missing
       `elapsed_ms` is never rendered as zero.
 - [ ] Attention uses only the concise structural-signal boundary; detailed
